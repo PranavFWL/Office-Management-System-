@@ -5,6 +5,47 @@
 @tailwind utilities;
 
 :root {
+  /* Modern Light Theme - Clean whites with soft accents */
+  --background: 210 15% 98%; /* #F8FAFC */
+  --foreground: 220 8% 15%; /* #222831 */
+  --muted: 210 13% 93%; /* #F1F5F9 */
+  --muted-foreground: 215 15% 50%; /* #64748B */
+  --popover: 0 0% 100%; /* Pure white */
+  --popover-foreground: 220 8% 15%;
+  --card: 0 0% 100%; /* Pure white cards */
+  --card-foreground: 220 8% 15%;
+  --border: 214 20% 90%; /* #E2E8F0 */
+  --input: 214 20% 95%; /* #F1F5F9 */
+  --primary: 217 91% 60%; /* #3B82F6 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 14% 95%; /* #F8FAFC */
+  --secondary-foreground: 220 8% 15%;
+  --accent: 213 100% 97%; /* #F0F9FF */
+  --accent-foreground: 220 8% 15%;
+  --destructive: 0 84% 60%; /* #EF4444 */
+  --destructive-foreground: 0 0% 100%;
+  --ring: 217 91% 60%;
+  --radius: 0.75rem;
+  --chart-1: 217 91% 60%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 258 90% 66%;
+  --chart-5: 340 82% 52%;
+  
+  /* Light theme gradients */
+  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  --gradient-secondary: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+  --gradient-accent: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+  --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  
+  /* Light glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+}
+
+.dark {
+  /* Professional Dark Theme - Current design */
   --background: 220 13% 6%; /* #0F1419 */
   --foreground: 220 9% 92%; /* #E8EAED */
   --muted: 220 13% 12%; /* #1D2128 */
@@ -31,42 +72,16 @@
   --chart-4: 258 60% 55%;
   --chart-5: 340 60% 50%;
   
-  /* Subtle gradient backgrounds */
+  /* Dark theme gradients */
   --gradient-primary: linear-gradient(135deg, #3B82A5 0%, #2563A3 100%);
   --gradient-secondary: linear-gradient(135deg, #8B7EBD 0%, #6366A8 100%);
   --gradient-accent: linear-gradient(135deg, #4A90A4 0%, #2E7D8C 100%);
   --gradient-success: linear-gradient(135deg, #4A9B8E 0%, #2D7D6E 100%);
   
-  /* Refined glassmorphism */
+  /* Dark glassmorphism */
   --glass-bg: rgba(31, 36, 45, 0.7);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-}
-
-.dark {
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
-  --muted: 223 47% 11%;
-  --muted-foreground: 215 20% 65%;
-  --popover: 224 71% 4%;
-  --popover-foreground: 213 31% 91%;
-  --card: 224 71% 4%;
-  --card-foreground: 213 31% 91%;
-  --border: 216 34% 17%;
-  --input: 216 34% 17%;
-  --primary: 207 90% 54%;
-  --primary-foreground: 222 47% 1%;
-  --secondary: 222 47% 11%;
-  --secondary-foreground: 213 31% 91%;
-  --accent: 216 34% 17%;
-  --accent-foreground: 213 31% 91%;
-  --destructive: 0 63% 31%;
-  --destructive-foreground: 213 31% 91%;
-  --ring: 216 34% 17%;
-  
-  /* Dark mode glassmorphism */
-  --glass-bg: 15 23 42 / 0.8;
-  --glass-border: 71 85 105 / 0.3;
 }
 
 @layer base {

@@ -16,11 +16,35 @@ export default function Settings() {
       subtitle="Manage your account preferences and application settings"
     >
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Profile Settings */}
-        <div className="glass-card rounded-xl p-6 shadow-lg">
+        {/* Theme Settings */}
+        <div className="glass-card rounded-xl p-6 border border-white/10">
           <div className="flex items-center space-x-3 mb-6">
-            <User className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-800">Profile Settings</h3>
+            {theme === 'dark' ? <Moon className="w-5 h-5 text-gray-400" /> : <Sun className="w-5 h-5 text-gray-600" />}
+            <h3 className="text-lg font-semibold text-foreground">Appearance</h3>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className="text-base font-medium text-foreground">Theme</Label>
+              <p className="text-sm text-muted-foreground">Switch between light and dark themes</p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Sun className="w-4 h-4 text-muted-foreground" />
+              <Switch
+                checked={theme === 'dark'}
+                onCheckedChange={toggleTheme}
+                className="data-[state=checked]:bg-primary"
+              />
+              <Moon className="w-4 h-4 text-muted-foreground" />
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Settings */}
+        <div className="glass-card rounded-xl p-6 border border-white/10">
+          <div className="flex items-center space-x-3 mb-6">
+            <User className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">Profile Settings</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
