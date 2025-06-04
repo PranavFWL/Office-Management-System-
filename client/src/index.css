@@ -5,42 +5,42 @@
 @tailwind utilities;
 
 :root {
-  --background: 240 10% 3.9%; /* #0A0A0B */
-  --foreground: 0 0% 98%; /* #FAFAFA */
-  --muted: 240 3.7% 15.9%; /* #27272A */
-  --muted-foreground: 240 5% 64.9%; /* #A1A1AA */
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 263 70% 50%; /* #8B5CF6 */
-  --primary-foreground: 210 40% 98%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 263 70% 50%;
+  --background: 220 13% 6%; /* #0F1419 */
+  --foreground: 220 9% 92%; /* #E8EAED */
+  --muted: 220 13% 12%; /* #1D2128 */
+  --muted-foreground: 220 8% 60%; /* #9AA0A6 */
+  --popover: 220 13% 8%;
+  --popover-foreground: 220 9% 92%;
+  --card: 220 13% 8%;
+  --card-foreground: 220 9% 92%;
+  --border: 220 13% 16%;
+  --input: 220 13% 16%;
+  --primary: 217 32% 35%; /* #3B82A5 */
+  --primary-foreground: 220 9% 92%;
+  --secondary: 220 13% 16%;
+  --secondary-foreground: 220 9% 92%;
+  --accent: 220 13% 16%;
+  --accent-foreground: 220 9% 92%;
+  --destructive: 0 50% 40%;
+  --destructive-foreground: 220 9% 92%;
+  --ring: 217 32% 35%;
   --radius: 0.75rem;
-  --chart-1: 263 70% 50%;
-  --chart-2: 142 76% 36%;
-  --chart-3: 38 92% 50%;
-  --chart-4: 258 90% 66%;
-  --chart-5: 340 82% 52%;
+  --chart-1: 217 32% 35%;
+  --chart-2: 142 42% 45%;
+  --chart-3: 38 60% 55%;
+  --chart-4: 258 60% 55%;
+  --chart-5: 340 60% 50%;
   
-  /* Modern gradient backgrounds */
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --gradient-success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  /* Subtle gradient backgrounds */
+  --gradient-primary: linear-gradient(135deg, #3B82A5 0%, #2563A3 100%);
+  --gradient-secondary: linear-gradient(135deg, #8B7EBD 0%, #6366A8 100%);
+  --gradient-accent: linear-gradient(135deg, #4A90A4 0%, #2E7D8C 100%);
+  --gradient-success: linear-gradient(135deg, #4A9B8E 0%, #2D7D6E 100%);
   
-  /* Advanced glassmorphism */
-  --glass-bg: rgba(15, 15, 15, 0.4);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  /* Refined glassmorphism */
+  --glass-bg: rgba(31, 36, 45, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .dark {

@@ -50,10 +50,10 @@ export function Sidebar() {
       {/* Logo Section */}
       <div className="p-6 border-b border-white/10">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center animate-gradient floating-animation">
+          <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
             <Building className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-xl font-bold text-white">OfficeHub</h1>
+          <h1 className="text-xl font-semibold text-white">OfficeHub</h1>
         </div>
       </div>
 
@@ -65,10 +65,10 @@ export function Sidebar() {
           
           return (
             <Link key={item.name} href={item.href}>
-              <div className={`flex items-center space-x-3 p-3 rounded-xl font-medium transition-all duration-300 cursor-pointer ${
+              <div className={`flex items-center space-x-3 p-3 rounded-lg font-medium transition-colors duration-200 cursor-pointer ${
                 isActive
-                  ? "gradient-primary text-white shadow-lg hover-glow"
-                  : "text-gray-300 hover:bg-white/10 hover:text-white"
+                  ? "gradient-primary text-white"
+                  : "text-gray-400 hover:bg-white/10 hover:text-white"
               }`}>
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
