@@ -3,11 +3,22 @@ import { CheckSquare, Plus, Filter, Search, User, Calendar, Clock, Repeat, Folde
 import { dummyTasks } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NewTaskForm } from "@/components/forms/NewTaskForm";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
 export default function Tasks() {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'frequency' | 'status'>('frequency');
   const [selectedFrequency, setSelectedFrequency] = useState<'all' | 'daily' | 'weekly' | 'monthly' | 'one-time'>('all');
+
+  const handleNewTask = (data: any) => {
+    console.log("New task:", data);
+    toast({
+      title: "Task Created",
+      description: `${data.title} has been successfully created.`,
+    });
+  };
 
   const tasksByFrequency = {
     daily: dummyTasks.filter(task => task.frequency === 'daily'),
@@ -118,10 +129,7 @@ export default function Tasks() {
               Filter
             </Button>
           </div>
-          <Button className="gradient-primary">
-            <Plus className="w-4 h-4 mr-2" />
-            New Task
-          </Button>
+          <NewTaskForm onSubmit={handleNewTask} />
         </div>
 
         {/* View Toggle */}

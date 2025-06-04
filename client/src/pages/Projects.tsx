@@ -3,8 +3,20 @@ import { FolderOpen, Plus, Filter, Search } from "lucide-react";
 import { dummyProjects } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NewProjectForm } from "@/components/forms/NewProjectForm";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Projects() {
+  const { toast } = useToast();
+
+  const handleNewProject = (data: any) => {
+    console.log("New project:", data);
+    toast({
+      title: "Project Created",
+      description: `${data.name} has been successfully created.`,
+    });
+  };
+
   return (
     <Layout 
       title="Projects" 
@@ -15,21 +27,18 @@ export default function Projects() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="w-5 h-5 text-gray-500 absolute left-3 top-2.5" />
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
               <Input 
                 placeholder="Search projects..." 
-                className="pl-10 w-64"
+                className="pl-10 w-64 bg-white/10 border-white/20 text-white placeholder-gray-400"
               />
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10">
               <Filter className="w-4 h-4 mr-2" />
               Filter
             </Button>
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
+          <NewProjectForm onSubmit={handleNewProject} />
         </div>
 
         {/* Projects Grid */}

@@ -3,8 +3,20 @@ import { Users, Plus, Search, Mail, Phone } from "lucide-react";
 import { dummyEmployees } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NewEmployeeForm } from "@/components/forms/NewEmployeeForm";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Employees() {
+  const { toast } = useToast();
+
+  const handleNewEmployee = (data: any) => {
+    console.log("New employee:", data);
+    toast({
+      title: "Employee Added",
+      description: `${data.name} has been successfully added to the team.`,
+    });
+  };
+
   return (
     <Layout 
       title="Employee Management" 
@@ -14,16 +26,13 @@ export default function Employees() {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="relative">
-            <Search className="w-5 h-5 text-gray-500 absolute left-3 top-2.5" />
+            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
             <Input 
               placeholder="Search employees..." 
-              className="pl-10 w-64"
+              className="pl-10 w-64 bg-white/10 border-white/20 text-white placeholder-gray-400"
             />
           </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Employee
-          </Button>
+          <NewEmployeeForm onSubmit={handleNewEmployee} />
         </div>
 
         {/* Employee Cards */}
