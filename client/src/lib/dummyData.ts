@@ -322,7 +322,7 @@ export const dummyEmployees: (Employee & { id: number })[] = [
   },
 ];
 
-export const dummyFinances: (Finance & { id: number })[] = [
+export const dummyFinances: (Finance & { id: number; status?: 'received' | 'pending' | 'paid' | 'overdue' })[] = [
   {
     id: 1,
     type: "income",
@@ -331,6 +331,7 @@ export const dummyFinances: (Finance & { id: number })[] = [
     amount: "22500.00",
     date: new Date("2024-02-01"),
     createdAt: new Date("2024-02-01"),
+    status: "received"
   },
   {
     id: 2,
@@ -340,6 +341,7 @@ export const dummyFinances: (Finance & { id: number })[] = [
     amount: "2400.00",
     date: new Date("2024-01-15"),
     createdAt: new Date("2024-01-15"),
+    status: "paid"
   },
   {
     id: 3,
@@ -349,6 +351,7 @@ export const dummyFinances: (Finance & { id: number })[] = [
     amount: "5000.00",
     date: new Date("2024-01-30"),
     createdAt: new Date("2024-01-30"),
+    status: "received"
   },
   {
     id: 4,
@@ -358,7 +361,140 @@ export const dummyFinances: (Finance & { id: number })[] = [
     amount: "1200.00",
     date: new Date("2024-02-05"),
     createdAt: new Date("2024-02-05"),
+    status: "paid"
   },
+  {
+    id: 5,
+    type: "income",
+    category: "Project Payment",
+    description: "Mobile App Development - Milestone 1",
+    amount: "35000.00",
+    date: new Date("2024-02-15"),
+    createdAt: new Date("2024-02-15"),
+    status: "pending"
+  },
+  {
+    id: 6,
+    type: "income",
+    category: "Project Payment",
+    description: "E-commerce Platform - Initial Payment",
+    amount: "45000.00",
+    date: new Date("2024-02-20"),
+    createdAt: new Date("2024-02-20"),
+    status: "overdue"
+  },
+  {
+    id: 7,
+    type: "expense",
+    category: "Salary",
+    description: "February salary payments",
+    amount: "28000.00",
+    date: new Date("2024-02-28"),
+    createdAt: new Date("2024-02-28"),
+    status: "paid"
+  },
+  {
+    id: 8,
+    type: "income",
+    category: "Project Payment",
+    description: "Website Redesign - Phase 2",
+    amount: "22500.00",
+    date: new Date("2024-03-01"),
+    createdAt: new Date("2024-03-01"),
+    status: "pending"
+  }
+];
+
+// Attendance Data
+export const dummyAttendance = [
+  {
+    id: 1,
+    employeeId: 1,
+    employeeName: "Sarah Wilson",
+    date: new Date("2024-02-20"),
+    checkIn: "09:15 AM",
+    checkOut: "06:30 PM",
+    totalHours: "9h 15m",
+    status: "present",
+    overtime: "1h 15m"
+  },
+  {
+    id: 2,
+    employeeId: 2,
+    employeeName: "Mike Johnson",
+    date: new Date("2024-02-20"),
+    checkIn: "08:45 AM",
+    checkOut: "05:45 PM",
+    totalHours: "9h 00m",
+    status: "present",
+    overtime: "1h 00m"
+  },
+  {
+    id: 3,
+    employeeId: 3,
+    employeeName: "Alex Chen",
+    date: new Date("2024-02-20"),
+    checkIn: "09:00 AM",
+    checkOut: "06:00 PM",
+    totalHours: "9h 00m",
+    status: "present",
+    overtime: "1h 00m"
+  },
+  {
+    id: 4,
+    employeeId: 4,
+    employeeName: "Emma Davis",
+    date: new Date("2024-02-20"),
+    checkIn: "-",
+    checkOut: "-",
+    totalHours: "-",
+    status: "absent",
+    overtime: "-"
+  },
+  {
+    id: 5,
+    employeeId: 1,
+    employeeName: "Sarah Wilson",
+    date: new Date("2024-02-19"),
+    checkIn: "09:00 AM",
+    checkOut: "05:30 PM",
+    totalHours: "8h 30m",
+    status: "present",
+    overtime: "0h 30m"
+  },
+  {
+    id: 6,
+    employeeId: 2,
+    employeeName: "Mike Johnson",
+    date: new Date("2024-02-19"),
+    checkIn: "09:30 AM",
+    checkOut: "06:15 PM",
+    totalHours: "8h 45m",
+    status: "late",
+    overtime: "0h 45m"
+  },
+  {
+    id: 7,
+    employeeId: 3,
+    employeeName: "Alex Chen",
+    date: new Date("2024-02-19"),
+    checkIn: "08:45 AM",
+    checkOut: "05:45 PM",
+    totalHours: "9h 00m",
+    status: "present",
+    overtime: "1h 00m"
+  },
+  {
+    id: 8,
+    employeeId: 4,
+    employeeName: "Emma Davis",
+    date: new Date("2024-02-19"),
+    checkIn: "09:15 AM",
+    checkOut: "05:00 PM",
+    totalHours: "7h 45m",
+    status: "half-day",
+    overtime: "-"
+  }
 ];
 
 export const dashboardStats = {

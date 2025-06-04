@@ -6,7 +6,8 @@ import {
   Users, 
   DollarSign, 
   Settings,
-  Building
+  Building,
+  Clock
 } from "lucide-react";
 
 const navigationItems = [
@@ -29,6 +30,11 @@ const navigationItems = [
     name: "Employees",
     href: "/employees",
     icon: Users,
+  },
+  {
+    name: "Attendance",
+    href: "/attendance",
+    icon: Clock,
   },
   {
     name: "Finance",

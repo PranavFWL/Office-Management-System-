@@ -1,188 +1,228 @@
 import { Layout } from "@/components/Layout";
-import { ChartWidget } from "@/components/ChartWidget";
 import { StatBox } from "@/components/StatBox";
-import { DollarSign, TrendingUp, TrendingDown, Plus, Search } from "lucide-react";
-import { dummyFinances, revenueData } from "@/lib/dummyData";
+import { ChartWidget } from "@/components/ChartWidget";
+import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, Plus, Filter, Search, Clock, AlertCircle } from "lucide-react";
+import { dummyFinances } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function Finance() {
-  const totalIncome = dummyFinances
-    .filter(f => f.type === 'income')
+  const receivedIncome = dummyFinances
+    .filter(f => f.type === 'income' && f.status === 'received')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
-    
+
+  const pendingIncome = dummyFinances
+    .filter(f => f.type === 'income' && (f.status === 'pending' || f.status === 'overdue'))
+    .reduce((sum, f) => sum + parseFloat(f.amount), 0);
+
+  const totalExpectedIncome = receivedIncome + pendingIncome;
+
   const totalExpenses = dummyFinances
     .filter(f => f.type === 'expense')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
-  const netProfit = totalIncome - totalExpenses;
+  const overdueAmount = dummyFinances
+    .filter(f => f.type === 'income' && f.status === 'overdue')
+    .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
-  const expenseByCategory = dummyFinances
-    .filter(f => f.type === 'expense')
-    .reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + parseFloat(expense.amount);
-      return acc;
-    }, {} as Record<string, number>);
+  const revenueData = [
+    { category: 'Received', amount: receivedIncome, color: '#10B981' },
+    { category: 'Pending', amount: pendingIncome - overdueAmount, color: '#F59E0B' },
+    { category: 'Overdue', amount: overdueAmount, color: '#EF4444' },
+  ];
 
-  const pieData = Object.entries(expenseByCategory).map(([category, amount]) => ({
-    name: category,
-    value: amount,
-  }));
+  const monthlyData = [
+    { month: 'Jan', expected: 28000, received: 28000, pending: 0 },
+    { month: 'Feb', expected: 32000, received: 27500, pending: 4500 },
+    { month: 'Mar', expected: 25000, received: 25000, pending: 0 },
+    { month: 'Apr', expected: 38000, received: 35000, pending: 3000 },
+    { month: 'May', expected: 42000, received: 40000, pending: 2000 },
+    { month: 'Jun', expected: 35000, received: 27500, pending: 7500 },
+  ];
 
-  const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case 'received': return 'bg-emerald-500/20 text-emerald-300';
+      case 'pending': return 'bg-orange-500/20 text-orange-300';
+      case 'overdue': return 'bg-red-500/20 text-red-300';
+      case 'paid': return 'bg-blue-500/20 text-blue-300';
+      default: return 'bg-gray-500/20 text-gray-300';
+    }
+  };
 
   return (
     <Layout 
       title="Financial Management" 
-      subtitle="Track income, expenses, and financial performance"
+      subtitle="Track expected vs received revenue and monitor cash flow"
     >
       <div className="space-y-6">
-        {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="relative">
-            <Search className="w-5 h-5 text-gray-500 absolute left-3 top-2.5" />
-            <Input 
-              placeholder="Search transactions..." 
-              className="pl-10 w-64"
-            />
-          </div>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Transaction
-          </Button>
-        </div>
-
-        {/* Financial KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Revenue Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <StatBox
-            title="Total Income"
-            value={`$${totalIncome.toLocaleString()}`}
-            change="+18%"
+            title="Expected Revenue"
+            value={`$${totalExpectedIncome.toLocaleString()}`}
+            change="+12.5%"
             changeType="positive"
-            changeLabel="vs last month"
+            changeLabel="this month"
             icon={TrendingUp}
-            iconColor="text-green-600"
-            iconBgColor="bg-green-100"
+            iconColor="text-blue-400"
+            iconBgColor="bg-blue-500/20"
           />
-          
           <StatBox
-            title="Total Expenses"
-            value={`$${totalExpenses.toLocaleString()}`}
-            change="+5%"
-            changeType="negative"
-            changeLabel="vs last month"
-            icon={TrendingDown}
-            iconColor="text-red-600"
-            iconBgColor="bg-red-100"
-          />
-          
-          <StatBox
-            title="Net Profit"
-            value={`$${netProfit.toLocaleString()}`}
-            change="+22%"
+            title="Received Revenue"
+            value={`$${receivedIncome.toLocaleString()}`}
+            change={`${((receivedIncome / totalExpectedIncome) * 100).toFixed(1)}%`}
             changeType="positive"
-            changeLabel="vs last month"
+            changeLabel="of expected"
             icon={DollarSign}
-            iconColor="text-blue-600"
-            iconBgColor="bg-blue-100"
+            iconColor="text-emerald-400"
+            iconBgColor="bg-emerald-500/20"
+          />
+          <StatBox
+            title="Pending Amount"
+            value={`$${(pendingIncome - overdueAmount).toLocaleString()}`}
+            change={`${(((pendingIncome - overdueAmount) / totalExpectedIncome) * 100).toFixed(1)}%`}
+            changeType="neutral"
+            changeLabel="of expected"
+            icon={Clock}
+            iconColor="text-orange-400"
+            iconBgColor="bg-orange-500/20"
+          />
+          <StatBox
+            title="Overdue Amount"
+            value={`$${overdueAmount.toLocaleString()}`}
+            change={`${((overdueAmount / totalExpectedIncome) * 100).toFixed(1)}%`}
+            changeType="negative"
+            changeLabel="needs action"
+            icon={AlertCircle}
+            iconColor="text-red-400"
+            iconBgColor="bg-red-500/20"
           />
         </div>
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue vs Expenses Chart */}
-          <ChartWidget title="Revenue vs Expenses">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                  <XAxis dataKey="month" stroke="#9CA3AF" />
-                  <YAxis stroke="#9CA3AF" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px',
-                      backdropFilter: 'blur(10px)'
-                    }} 
-                  />
-                  <Bar dataKey="revenue" fill="#3B82F6" name="Revenue" />
-                  <Bar dataKey="expenses" fill="#EF4444" name="Expenses" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+          <ChartWidget title="Expected vs Received Revenue">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                <XAxis dataKey="month" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar dataKey="expected" fill="#6B7280" radius={4} name="Expected" />
+                <Bar dataKey="received" fill="#10B981" radius={4} name="Received" />
+                <Bar dataKey="pending" fill="#F59E0B" radius={4} name="Pending" />
+              </BarChart>
+            </ResponsiveContainer>
           </ChartWidget>
 
-          {/* Expense Breakdown Pie Chart */}
-          <ChartWidget title="Expense Breakdown">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value) => [`$${value}`, 'Amount']}
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px',
-                      backdropFilter: 'blur(10px)'
-                    }} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+          <ChartWidget title="Revenue Status Breakdown">
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={revenueData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  dataKey="amount"
+                  label={({ category, amount }) => `${category}: $${amount.toLocaleString()}`}
+                >
+                  {revenueData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+              </PieChart>
+            </ResponsiveContainer>
           </ChartWidget>
         </div>
 
         {/* Recent Transactions */}
-        <div className="glass-card rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-800">Recent Transactions</h3>
-            <Button variant="outline" size="sm">View All</Button>
-          </div>
-          <div className="space-y-4">
-            {dummyFinances.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
-                  }`}>
-                    {transaction.type === 'income' ? (
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-600" />
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-gray-800">{transaction.description}</h4>
-                    <p className="text-sm text-gray-600">{transaction.category}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${
-                    transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'income' ? '+' : '-'}${transaction.amount}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(transaction.date).toLocaleDateString()}
-                  </p>
-                </div>
+        <div className="glass-card rounded-2xl p-6 border border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <h3 className="text-xl font-semibold text-white">Recent Transactions</h3>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+                <Input 
+                  placeholder="Search transactions..." 
+                  className="pl-10 w-64 bg-white/10 border-white/20 text-white placeholder-gray-400"
+                />
               </div>
-            ))}
+              <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10">
+                <Filter className="w-4 h-4 mr-2" />
+                Filter
+              </Button>
+              <Button className="gradient-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                New Transaction
+              </Button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Description</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Category</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Type</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-300">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dummyFinances.map((transaction) => (
+                  <tr key={transaction.id} className="border-b border-white/5 hover:bg-white/5">
+                    <td className="py-4 px-4 text-gray-400">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="font-medium text-white">{transaction.description}</div>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className="px-2 py-1 bg-white/10 text-gray-300 rounded-full text-sm">
+                        {transaction.category}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                        {transaction.status || 'pending'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center">
+                        {transaction.type === 'income' ? (
+                          <ArrowUpRight className="w-4 h-4 text-emerald-400 mr-1" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4 text-red-400 mr-1" />
+                        )}
+                        <span className={`font-medium ${
+                          transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          {transaction.type}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-right">
+                      <span className={`font-bold ${
+                        transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : '-'}${parseFloat(transaction.amount).toLocaleString()}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

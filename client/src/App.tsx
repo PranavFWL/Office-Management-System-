@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Projects from "@/pages/Projects";
 import Tasks from "@/pages/Tasks";
 import Employees from "@/pages/Employees";
+import Attendance from "@/pages/Attendance";
 import Finance from "@/pages/Finance";
 import Settings from "@/pages/Settings";
 import NotFound from "@/pages/not-found";
