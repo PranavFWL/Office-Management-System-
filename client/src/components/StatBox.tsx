@@ -22,26 +22,37 @@ export function StatBox({
   iconBgColor 
 }: StatBoxProps) {
   const changeColorClass = {
-    positive: "text-green-500",
-    negative: "text-red-500",
-    neutral: "text-blue-500"
+    positive: "text-green-400",
+    negative: "text-red-400",
+    neutral: "text-blue-400"
+  }[changeType];
+
+  const gradientClass = {
+    positive: "gradient-success",
+    negative: "gradient-secondary", 
+    neutral: "gradient-accent"
   }[changeType];
 
   return (
-    <div className="glass-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+    <div className="glass-card rounded-2xl p-6 hover-glow transition-all duration-500 neon-border floating-animation">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{title}</p>
-          <p className="text-3xl font-bold text-gray-800 mt-2">{value}</p>
-          <div className="flex items-center mt-2">
-            <span className={`text-sm font-medium ${changeColorClass}`}>{change}</span>
-            <span className="text-gray-600 text-sm ml-1">{changeLabel}</span>
+        <div className="flex-1">
+          <p className="text-gray-300 text-sm font-medium uppercase tracking-wider">{title}</p>
+          <p className="text-4xl font-bold text-white mt-3 mb-2">{value}</p>
+          <div className="flex items-center">
+            <span className={`text-sm font-semibold ${changeColorClass} bg-white/10 px-2 py-1 rounded-lg`}>
+              {change}
+            </span>
+            <span className="text-gray-400 text-sm ml-2">{changeLabel}</span>
           </div>
         </div>
-        <div className={`w-12 h-12 ${iconBgColor} rounded-xl flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 ${iconColor}`} />
+        <div className={`w-16 h-16 ${gradientClass} rounded-2xl flex items-center justify-center shadow-lg animate-gradient pulse-glow`}>
+          <Icon className="w-8 h-8 text-white" />
         </div>
       </div>
+      
+      {/* Decorative bottom line */}
+      <div className={`mt-4 h-1 ${gradientClass} rounded-full opacity-60`}></div>
     </div>
   );
 }
