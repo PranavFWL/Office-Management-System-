@@ -5,12 +5,24 @@ import { Users, Clock, CheckCircle, AlertTriangle, Calendar, Plus, Filter, Searc
 import { dummyAttendance, dummyEmployees } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MarkAttendanceForm } from "@/components/forms/MarkAttendanceForm";
+import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useState } from "react";
 
 export default function Attendance() {
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState('2024-02-20');
   const [activeTab, setActiveTab] = useState<'today' | 'records'>('today');
+
+  const handleMarkAttendance = (data: any) => {
+    console.log("Mark attendance:", data);
+    const employeeName = dummyEmployees.find(emp => emp.id.toString() === data.employeeId)?.name || 'Employee';
+    toast({
+      title: "Attendance Marked",
+      description: `Attendance for ${employeeName} has been successfully recorded.`,
+    });
+  };
 
   // Today's attendance stats
   const todayAttendance = dummyAttendance.filter(record => 
@@ -88,10 +100,7 @@ export default function Attendance() {
               Filter
             </Button>
           </div>
-          <Button className="gradient-primary">
-            <Plus className="w-4 h-4 mr-2" />
-            Mark Attendance
-          </Button>
+          <MarkAttendanceForm onSubmit={handleMarkAttendance} />
         </div>
 
         {/* View Toggle */}

@@ -5,9 +5,21 @@ import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, Plus,
 import { dummyFinances } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NewTransactionForm } from "@/components/forms/NewTransactionForm";
+import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 export default function Finance() {
+  const { toast } = useToast();
+
+  const handleNewTransaction = (data: any) => {
+    console.log("New transaction:", data);
+    toast({
+      title: "Transaction Added",
+      description: `${data.type === 'income' ? 'Income' : 'Expense'} transaction of $${parseFloat(data.amount).toLocaleString()} has been recorded.`,
+    });
+  };
+
   const receivedIncome = dummyFinances
     .filter(f => f.type === 'income' && f.status === 'received')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
@@ -160,10 +172,7 @@ export default function Finance() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
-              <Button className="gradient-primary">
-                <Plus className="w-4 h-4 mr-2" />
-                New Transaction
-              </Button>
+              <NewTransactionForm onSubmit={handleNewTransaction} />
             </div>
           </div>
 
