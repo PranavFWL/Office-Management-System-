@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --background: 210 11% 98%; /* #F9FAFB */
+  --foreground: 222 47% 11%; /* #1f2937 */
+  --muted: 210 40% 94%; /* #E5E7EB */
+  --muted-foreground: 215 20% 65%; /* #A0AEC0 */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --border: 214 32% 91%; /* #E5E7EB */
+  --input: 214 32% 91%;
+  --primary: 207 90% 54%; /* #3B82F6 */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 94%;
+  --secondary-foreground: 222 47% 11%;
+  --accent: 210 40% 94%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 207 90% 54%;
+  --radius: 0.5rem;
+  --chart-1: 207 90% 54%;
+  --chart-2: 142 76% 36%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 258 90% 66%;
+  --chart-5: 340 82% 52%;
+  
+  /* Custom glassmorphism colors */
+  --glass-bg: 255 255 255 / 0.8;
+  --glass-border: 255 255 255 / 0.3;
+  --soft-blue: 207 89% 86%; /* #E5F0F8 */
+}
+
+.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215 20% 65%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 213 31% 91%;
+  --card: 224 71% 4%;
+  --card-foreground: 213 31% 91%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 222 47% 1%;
+  --secondary: 222 47% 11%;
+  --secondary-foreground: 213 31% 91%;
+  --accent: 216 34% 17%;
+  --accent-foreground: 213 31% 91%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 213 31% 91%;
+  --ring: 216 34% 17%;
+  
+  /* Dark mode glassmorphism */
+  --glass-bg: 15 23 42 / 0.8;
+  --glass-border: 71 85 105 / 0.3;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-lg border border-white/30 shadow-lg;
+  }
+  
+  .glass-card-dark {
+    @apply dark:bg-slate-800/80 dark:border-slate-700/30;
+  }
+  
+  .glassmorphism {
+    background: rgba(var(--glass-bg));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--glass-border));
+  }
+  
+  .chart-container {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    backdrop-filter: blur(10px);
+  }
+  
+  .soft-blue-bg {
+    background-color: hsl(var(--soft-blue));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

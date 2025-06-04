@@ -1,0 +1,226 @@
+import { Layout } from "@/components/Layout";
+import { StatBox } from "@/components/StatBox";
+import { ChartWidget } from "@/components/ChartWidget";
+import { FolderOpen, CheckSquare, Users, DollarSign, Plus, BarChart3 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { dashboardStats, revenueData, projectStatusData, dummyProjects } from "@/lib/dummyData";
+
+export default function Dashboard() {
+  return (
+    <Layout 
+      title="Dashboard Overview" 
+      subtitle="Welcome back! Here's what's happening with your office."
+    >
+      <div className="space-y-6">
+        {/* KPI Cards Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatBox
+            title="Active Projects"
+            value={dashboardStats.activeProjects}
+            change="+12%"
+            changeType="positive"
+            changeLabel="from last month"
+            icon={FolderOpen}
+            iconColor="text-blue-600"
+            iconBgColor="bg-blue-100"
+          />
+          
+          <StatBox
+            title="Pending Tasks"
+            value={dashboardStats.pendingTasks}
+            change="+5%"
+            changeType="positive"
+            changeLabel="from last week"
+            icon={CheckSquare}
+            iconColor="text-orange-600"
+            iconBgColor="bg-orange-100"
+          />
+          
+          <StatBox
+            title="Team Members"
+            value={dashboardStats.teamMembers}
+            change="+3"
+            changeType="positive"
+            changeLabel="new hires"
+            icon={Users}
+            iconColor="text-green-600"
+            iconBgColor="bg-green-100"
+          />
+          
+          <StatBox
+            title="Monthly Revenue"
+            value={dashboardStats.monthlyRevenue}
+            change="+18%"
+            changeType="positive"
+            changeLabel="vs last month"
+            icon={DollarSign}
+            iconColor="text-purple-600"
+            iconBgColor="bg-purple-100"
+          />
+        </div>
+
+        {/* Charts and Analytics Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Revenue Trend Chart */}
+          <ChartWidget 
+            title="Revenue Trend"
+            actions={
+              <select className="text-sm border border-gray-200 rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option>Last 6 months</option>
+                <option>Last year</option>
+                <option>All time</option>
+              </select>
+            }
+          >
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                  <XAxis dataKey="month" stroke="#9CA3AF" />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      backdropFilter: 'blur(10px)'
+                    }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#3B82F6" 
+                    strokeWidth={3}
+                    dot={{ fill: '#3B82F6', strokeWidth: 2, r: 4 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartWidget>
+
+          {/* Project Status */}
+          <ChartWidget 
+            title="Project Status"
+            actions={
+              <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                View All
+              </button>
+            }
+          >
+            <div className="space-y-4">
+              {projectStatusData.map((item) => (
+                <div key={item.status} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-gray-700">{item.status}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-2xl font-semibold text-gray-800">{item.count}</span>
+                    <span className="text-sm text-gray-600">projects</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ChartWidget>
+        </div>
+
+        {/* Recent Activity and Quick Actions */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent Projects */}
+          <div className="lg:col-span-2 glass-card rounded-xl p-6 shadow-lg">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-800">Recent Projects</h3>
+              <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                View All Projects
+              </button>
+            </div>
+            <div className="space-y-4">
+              {dummyProjects.slice(0, 3).map((project) => (
+                <div key={project.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FolderOpen className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-800">{project.name}</h4>
+                      <p className="text-sm text-gray-600">{project.client}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      project.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                      project.status === 'on-hold' ? 'bg-orange-100 text-orange-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
+                    </span>
+                    <span className="text-sm text-gray-600">{project.progress}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="glass-card rounded-xl p-6 shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-800 mb-6">Quick Actions</h3>
+            <div className="space-y-3">
+              <button className="w-full flex items-center space-x-3 p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-left">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-medium text-gray-800">Create Project</span>
+              </button>
+
+              <button className="w-full flex items-center space-x-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-left">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-medium text-gray-800">Add Task</span>
+              </button>
+
+              <button className="w-full flex items-center space-x-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-left">
+                <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <Plus className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-medium text-gray-800">Invite Member</span>
+              </button>
+
+              <button className="w-full flex items-center space-x-3 p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors text-left">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-4 h-4 text-white" />
+                </div>
+                <span className="font-medium text-gray-800">Generate Report</span>
+              </button>
+            </div>
+
+            {/* Recent Notifications */}
+            <div className="mt-8">
+              <h4 className="text-md font-semibold text-gray-800 mb-4">Recent Notifications</h4>
+              <div className="space-y-3">
+                <div className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-sm font-medium text-gray-800">Project deadline approaching</p>
+                  <p className="text-xs text-gray-600 mt-1">Website Redesign due in 2 days</p>
+                </div>
+                
+                <div className="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                  <p className="text-sm font-medium text-gray-800">Task completed</p>
+                  <p className="text-xs text-gray-600 mt-1">Logo design approved by client</p>
+                </div>
+                
+                <div className="p-3 bg-orange-50 rounded-lg border-l-4 border-orange-500">
+                  <p className="text-sm font-medium text-gray-800">New team member</p>
+                  <p className="text-xs text-gray-600 mt-1">Sarah Johnson joined the design team</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
