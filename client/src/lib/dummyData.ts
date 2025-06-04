@@ -51,11 +51,12 @@ export const dummyProjects: (Project & { id: number })[] = [
   },
 ];
 
-export const dummyTasks: (Task & { id: number; projectName?: string; assigneeName?: string })[] = [
+export const dummyTasks: (Task & { id: number; projectName?: string; assigneeName?: string; frequency?: 'daily' | 'weekly' | 'monthly' | 'one-time' })[] = [
+  // Daily Tasks
   {
     id: 1,
-    title: "Design homepage mockup",
-    description: "Create initial homepage design concepts",
+    title: "Daily standup meeting",
+    description: "Team sync and progress updates",
     status: "done",
     priority: "high",
     projectId: 1,
@@ -64,11 +65,12 @@ export const dummyTasks: (Task & { id: number; projectName?: string; assigneeNam
     assigneeName: "Sarah Wilson",
     dueDate: new Date("2024-02-15"),
     createdAt: new Date("2024-01-15"),
+    frequency: "daily"
   },
   {
     id: 2,
-    title: "Implement user authentication",
-    description: "Set up login and registration functionality",
+    title: "Code review and testing",
+    description: "Review team code submissions and run tests",
     status: "in-progress",
     priority: "high",
     projectId: 2,
@@ -77,11 +79,12 @@ export const dummyTasks: (Task & { id: number; projectName?: string; assigneeNam
     assigneeName: "Mike Johnson",
     dueDate: new Date("2024-03-01"),
     createdAt: new Date("2024-02-01"),
+    frequency: "daily"
   },
   {
     id: 3,
-    title: "Database optimization",
-    description: "Improve query performance and indexing",
+    title: "Monitor system performance",
+    description: "Check server metrics and database performance",
     status: "todo",
     priority: "medium",
     projectId: 4,
@@ -90,20 +93,182 @@ export const dummyTasks: (Task & { id: number; projectName?: string; assigneeNam
     assigneeName: "Alex Chen",
     dueDate: new Date("2024-02-28"),
     createdAt: new Date("2024-02-10"),
+    frequency: "daily"
   },
   {
     id: 4,
-    title: "Content management system",
-    description: "Build CMS for easy content updates",
+    title: "Content updates",
+    description: "Update website content and blog posts",
     status: "in-progress",
-    priority: "medium",
+    priority: "low",
     projectId: 1,
     projectName: "Website Redesign",
     assigneeId: 4,
     assigneeName: "Emma Davis",
     dueDate: new Date("2024-03-10"),
     createdAt: new Date("2024-02-05"),
+    frequency: "daily"
   },
+
+  // Weekly Tasks
+  {
+    id: 5,
+    title: "Weekly progress report",
+    description: "Compile and submit weekly project status report",
+    status: "todo",
+    priority: "high",
+    projectId: 1,
+    projectName: "Website Redesign",
+    assigneeId: 1,
+    assigneeName: "Sarah Wilson",
+    dueDate: new Date("2024-02-20"),
+    createdAt: new Date("2024-02-13"),
+    frequency: "weekly"
+  },
+  {
+    id: 6,
+    title: "Client presentation",
+    description: "Present weekly deliverables to client stakeholders",
+    status: "in-progress",
+    priority: "high",
+    projectId: 2,
+    projectName: "Mobile App Development",
+    assigneeId: 2,
+    assigneeName: "Mike Johnson",
+    dueDate: new Date("2024-02-25"),
+    createdAt: new Date("2024-02-18"),
+    frequency: "weekly"
+  },
+  {
+    id: 7,
+    title: "Security audit",
+    description: "Perform weekly security checks and vulnerability assessment",
+    status: "done",
+    priority: "high",
+    projectId: 4,
+    projectName: "E-commerce Platform",
+    assigneeId: 3,
+    assigneeName: "Alex Chen",
+    dueDate: new Date("2024-02-22"),
+    createdAt: new Date("2024-02-15"),
+    frequency: "weekly"
+  },
+  {
+    id: 8,
+    title: "Team retrospective",
+    description: "Weekly team meeting to discuss improvements",
+    status: "todo",
+    priority: "medium",
+    projectId: 1,
+    projectName: "Website Redesign",
+    assigneeId: 4,
+    assigneeName: "Emma Davis",
+    dueDate: new Date("2024-02-26"),
+    createdAt: new Date("2024-02-19"),
+    frequency: "weekly"
+  },
+
+  // Monthly Tasks
+  {
+    id: 9,
+    title: "Monthly budget review",
+    description: "Review project expenses and budget allocation",
+    status: "in-progress",
+    priority: "high",
+    projectId: 1,
+    projectName: "Website Redesign",
+    assigneeId: 1,
+    assigneeName: "Sarah Wilson",
+    dueDate: new Date("2024-02-29"),
+    createdAt: new Date("2024-02-01"),
+    frequency: "monthly"
+  },
+  {
+    id: 10,
+    title: "Performance evaluation",
+    description: "Monthly team performance and project milestone review",
+    status: "todo",
+    priority: "medium",
+    projectId: 2,
+    projectName: "Mobile App Development",
+    assigneeId: 2,
+    assigneeName: "Mike Johnson",
+    dueDate: new Date("2024-02-28"),
+    createdAt: new Date("2024-02-01"),
+    frequency: "monthly"
+  },
+  {
+    id: 11,
+    title: "Infrastructure maintenance",
+    description: "Monthly server maintenance and updates",
+    status: "done",
+    priority: "high",
+    projectId: 4,
+    projectName: "E-commerce Platform",
+    assigneeId: 3,
+    assigneeName: "Alex Chen",
+    dueDate: new Date("2024-02-25"),
+    createdAt: new Date("2024-02-01"),
+    frequency: "monthly"
+  },
+  {
+    id: 12,
+    title: "Client satisfaction survey",
+    description: "Monthly client feedback collection and analysis",
+    status: "todo",
+    priority: "medium",
+    projectId: 1,
+    projectName: "Website Redesign",
+    assigneeId: 4,
+    assigneeName: "Emma Davis",
+    dueDate: new Date("2024-02-29"),
+    createdAt: new Date("2024-02-01"),
+    frequency: "monthly"
+  },
+
+  // One-time Tasks
+  {
+    id: 13,
+    title: "Initial project setup",
+    description: "Set up development environment and project structure",
+    status: "done",
+    priority: "high",
+    projectId: 3,
+    projectName: "Brand Identity",
+    assigneeId: 1,
+    assigneeName: "Sarah Wilson",
+    dueDate: new Date("2024-01-20"),
+    createdAt: new Date("2024-01-10"),
+    frequency: "one-time"
+  },
+  {
+    id: 14,
+    title: "API documentation",
+    description: "Create comprehensive API documentation",
+    status: "in-progress",
+    priority: "medium",
+    projectId: 2,
+    projectName: "Mobile App Development",
+    assigneeId: 2,
+    assigneeName: "Mike Johnson",
+    dueDate: new Date("2024-03-15"),
+    createdAt: new Date("2024-02-15"),
+    frequency: "one-time"
+  },
+  {
+    id: 15,
+    title: "Database migration",
+    description: "Migrate legacy data to new database structure",
+    status: "todo",
+    priority: "high",
+    projectId: 4,
+    projectName: "E-commerce Platform",
+    assigneeId: 3,
+    assigneeName: "Alex Chen",
+    dueDate: new Date("2024-03-05"),
+    createdAt: new Date("2024-02-20"),
+    frequency: "one-time"
+  }
 ];
 
 export const dummyEmployees: (Employee & { id: number })[] = [
