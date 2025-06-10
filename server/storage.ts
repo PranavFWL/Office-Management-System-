@@ -1,19 +1,18 @@
-import { 
-  users, 
-  projects, 
-  tasks, 
-  employees, 
-  finances,
-  type User, 
-  type InsertUser,
-  type Project,
-  type InsertProject,
-  type Task,
-  type InsertTask,
-  type Employee,
-  type InsertEmployee,
-  type Finance,
-  type InsertFinance
+import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { eq } from "drizzle-orm";
+import * as schema from "@shared/schema";
+import type {
+  User,
+  InsertUser,
+  Project,
+  InsertProject,
+  Task,
+  InsertTask,
+  Employee,
+  InsertEmployee,
+  Finance,
+  InsertFinance,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -52,6 +51,154 @@ export interface IStorage {
   deleteFinance(id: number): Promise<boolean>;
 }
 
+// Neon Database Storage Implementation
+export class NeonStorage implements IStorage {
+  private db: NeonHttpDatabase<typeof schema>;
+
+  constructor() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is required for Neon connection");
+    }
+
+    const sql = neon(process.env.DATABASE_URL!)
+    this.db = drizzle(sql, { schema });
+  }
+
+  // Users
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await this.db.select().from(schema.users).where(eq(schema.users.id, id));
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db.select().from(schema.users).where(eq(schema.users.username, username));
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await this.db.insert(schema.users).values(insertUser).returning();
+    return result[0];
+  }
+
+  // Projects
+  async getAllProjects(): Promise<Project[]> {
+    return await this.db.select().from(schema.projects);
+  }
+
+  async getProject(id: number): Promise<Project | undefined> {
+    const result = await this.db.select().from(schema.projects).where(eq(schema.projects.id, id));
+    return result[0];
+  }
+
+  async createProject(insertProject: InsertProject): Promise<Project> {
+    const result = await this.db.insert(schema.projects).values(insertProject).returning();
+    return result[0];
+  }
+
+  async updateProject(id: number, projectUpdate: Partial<InsertProject>): Promise<Project | undefined> {
+    await this.db
+      .update(schema.projects)
+      .set(projectUpdate)
+      .where(eq(schema.projects.id, id));
+    return this.getProject(id);
+  }
+
+  async deleteProject(id: number): Promise<boolean> {
+    const result = await this.db.delete(schema.projects).where(eq(schema.projects.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Tasks
+  async getAllTasks(): Promise<Task[]> {
+    return await this.db.select().from(schema.tasks);
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    const result = await this.db.select().from(schema.tasks).where(eq(schema.tasks.id, id));
+    return result[0];
+  }
+
+  async getTasksByProject(projectId: number): Promise<Task[]> {
+    return await this.db.select().from(schema.tasks).where(eq(schema.tasks.projectId, projectId));
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const result = await this.db.insert(schema.tasks).values(insertTask).returning();
+    return result[0];
+  }
+
+  async updateTask(id: number, taskUpdate: Partial<InsertTask>): Promise<Task | undefined> {
+    await this.db
+      .update(schema.tasks)
+      .set(taskUpdate)
+      .where(eq(schema.tasks.id, id));
+    return this.getTask(id);
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    const result = await this.db.delete(schema.tasks).where(eq(schema.tasks.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Employees
+  async getAllEmployees(): Promise<Employee[]> {
+    return await this.db.select().from(schema.employees);
+  }
+
+  async getEmployee(id: number): Promise<Employee | undefined> {
+    const result = await this.db.select().from(schema.employees).where(eq(schema.employees.id, id));
+    return result[0];
+  }
+
+  async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
+    const result = await this.db.insert(schema.employees).values(insertEmployee).returning();
+    return result[0];
+  }
+
+  async updateEmployee(id: number, employeeUpdate: Partial<InsertEmployee>): Promise<Employee | undefined> {
+    await this.db
+      .update(schema.employees)
+      .set(employeeUpdate)
+      .where(eq(schema.employees.id, id));
+    return this.getEmployee(id);
+  }
+
+  async deleteEmployee(id: number): Promise<boolean> {
+    const result = await this.db.delete(schema.employees).where(eq(schema.employees.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Finances
+  async getAllFinances(): Promise<Finance[]> {
+    return await this.db.select().from(schema.finances);
+  }
+
+  async getFinance(id: number): Promise<Finance | undefined> {
+    const result = await this.db.select().from(schema.finances).where(eq(schema.finances.id, id));
+    return result[0];
+  }
+
+  async createFinance(insertFinance: InsertFinance): Promise<Finance> {
+    const result = await this.db.insert(schema.finances).values(insertFinance).returning();
+    return result[0];
+  }
+
+  async updateFinance(id: number, financeUpdate: Partial<InsertFinance>): Promise<Finance | undefined> {
+    const result = await this.db
+      .update(schema.finances)
+      .set(financeUpdate)
+      .where(eq(schema.finances.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteFinance(id: number): Promise<boolean> {
+    const result = await this.db.delete(schema.finances).where(eq(schema.finances.id, id));
+    return result.rowCount > 0;
+  }
+}
+
+// Memory Storage Implementation (keep for development/testing)
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private projects: Map<number, Project>;
@@ -226,4 +373,7 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use Neon in production, Memory storage for development
+export const storage = process.env.NODE_ENV === 'production' 
+  ? new NeonStorage() 
+  : new MemStorage();

@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertProjectSchema, insertTaskSchema, insertEmployeeSchema, insertFinanceSchema } from "@shared/schema";
+import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Projects routes
@@ -33,7 +34,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const project = await storage.createProject(validatedData);
       res.status(201).json(project);
     } catch (error) {
-      res.status(400).json({ message: "Invalid project data" });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.flatten() });
+      }
+      console.error("Error creating project:", error);
+      res.status(500).json({ message: "Failed to create project" });
     }
   });
 
@@ -82,7 +87,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const task = await storage.createTask(validatedData);
       res.status(201).json(task);
     } catch (error) {
-      res.status(400).json({ message: "Invalid task data" });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.flatten() });
+      }
+      console.error("Error creating task:", error);
+      res.status(500).json({ message: "Failed to create task" });
     }
   });
 
@@ -115,7 +124,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const employee = await storage.createEmployee(validatedData);
       res.status(201).json(employee);
     } catch (error) {
-      res.status(400).json({ message: "Invalid employee data" });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.flatten() });
+      }
+      console.error("Error creating employee:", error);
+      res.status(500).json({ message: "Failed to create employee" });
     }
   });
 
@@ -148,7 +161,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const finance = await storage.createFinance(validatedData);
       res.status(201).json(finance);
     } catch (error) {
-      res.status(400).json({ message: "Invalid finance data" });
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.flatten() });
+      }
+      console.error("Error creating finance record:", error);
+      res.status(500).json({ message: "Failed to create finance record" });
     }
   });
 
