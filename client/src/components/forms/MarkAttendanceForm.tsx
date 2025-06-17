@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Clock, Calendar, User } from "lucide-react";
-import { dummyEmployees } from "@/lib/dummyData";
+import { Employee } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 interface MarkAttendanceFormProps {
-  onSubmit?: (data: any) => void;
+  onSuccess?: () => void;
 }
 
-export function MarkAttendanceForm({ onSubmit }: MarkAttendanceFormProps) {
+export function MarkAttendanceForm({ onSuccess }: MarkAttendanceFormProps) {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [formData, setFormData] = useState({
     employeeId: "",
     date: new Date().toISOString().split('T')[0],
@@ -21,20 +24,91 @@ export function MarkAttendanceForm({ onSubmit }: MarkAttendanceFormProps) {
     status: "present",
     notes: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Fetch employees when the form opens
+    if (isOpen) {
+      fetchEmployees();
+    }
+  }, [isOpen]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch("/api/employees");
+      if (!response.ok) {
+        throw new Error("Failed to fetch employees");
+      }
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load employees.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
+    setIsSubmitting(true);
+    
+    try {
       const totalHours = calculateTotalHours(formData.checkIn, formData.checkOut);
       const overtime = calculateOvertime(totalHours);
       
-      onSubmit({
-        ...formData,
-        totalHours: totalHours || "-",
-        overtime: overtime || "-"
+      const payload = {
+        employeeId: parseInt(formData.employeeId),
+        date: new Date(formData.date),
+        checkIn: formData.checkIn || null,
+        checkOut: formData.checkOut || null,
+        totalHours: totalHours || null,
+        status: formData.status,
+        overtime: overtime || null,
+        notes: formData.notes || null
+      };
+      
+      const response = await fetch("/api/attendance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to mark attendance");
+      }
+      
+      const employeeName = employees.find(emp => emp.id === parseInt(formData.employeeId))?.name || "Employee";
+      
+      toast({
+        title: "Attendance Marked",
+        description: `Attendance for ${employeeName} has been successfully recorded.`,
+      });
+      
+      setIsOpen(false);
+      resetForm();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error marking attendance:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to mark attendance",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsOpen(false);
+  };
+
+  const resetForm = () => {
     setFormData({
       employeeId: "",
       date: new Date().toISOString().split('T')[0],
@@ -96,7 +170,7 @@ export function MarkAttendanceForm({ onSubmit }: MarkAttendanceFormProps) {
                 <SelectValue placeholder="Select employee" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
-                {dummyEmployees.map((employee) => (
+                {employees.map((employee) => (
                   <SelectItem key={employee.id} value={employee.id.toString()}>
                     {employee.name} - {employee.role}
                   </SelectItem>
@@ -187,17 +261,29 @@ export function MarkAttendanceForm({ onSubmit }: MarkAttendanceFormProps) {
             </div>
           )}
 
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-gray-300">Notes (Optional)</Label>
+            <Input
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleChange("notes", e.target.value)}
+              placeholder="Any additional notes"
+              className="bg-white/10 border-white/20 text-white"
+            />
+          </div>
+
           <div className="flex justify-end space-x-4 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
               className="border-white/20 text-gray-300 hover:bg-white/10"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" className="gradient-primary">
-              Mark Attendance
+            <Button type="submit" className="gradient-primary" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Mark Attendance"}
             </Button>
           </div>
         </form>

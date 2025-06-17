@@ -5,13 +5,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Mail, Phone, Calendar, DollarSign } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface NewEmployeeFormProps {
-  onSubmit?: (data: any) => void;
+  onSuccess?: () => void;
 }
 
-export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
+export function NewEmployeeForm({ onSuccess }: NewEmployeeFormProps) {
+  const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,12 +25,62 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
     hireDate: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(formData);
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare payload with proper types
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        department: formData.department,
+        phone: formData.phone || null,
+        salary: formData.salary ? parseFloat(formData.salary) : null,
+        hireDate: formData.hireDate ? new Date(formData.hireDate) : null
+      };
+      
+      // Send data to API
+      const response = await fetch("/api/employees", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create employee");
+      }
+      
+      const employee = await response.json();
+      
+      toast({
+        title: "Employee Added",
+        description: `${employee.name} has been successfully added.`,
+      });
+      
+      setIsOpen(false);
+      resetForm();
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Error creating employee:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create employee",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsOpen(false);
+  };
+
+  const resetForm = () => {
     setFormData({
       name: "",
       email: "",
@@ -70,6 +123,7 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
                 placeholder="Enter full name"
                 className="bg-white/10 border-white/20 text-white placeholder-gray-400"
                 required
+                disabled={isSubmitting}
               />
             </div>
             
@@ -85,6 +139,7 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
                   placeholder="email@company.com"
                   className="bg-white/10 border-white/20 text-white placeholder-gray-400 pl-10"
                   required
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -93,7 +148,11 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="role" className="text-gray-300">Job Role</Label>
-              <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
+              <Select 
+                value={formData.role} 
+                onValueChange={(value) => handleChange("role", value)}
+                disabled={isSubmitting}
+              >
                 <SelectTrigger className="bg-white/10 border-white/20 text-white">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
@@ -109,7 +168,11 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
 
             <div className="space-y-2">
               <Label htmlFor="department" className="text-gray-300">Department</Label>
-              <Select value={formData.department} onValueChange={(value) => handleChange("department", value)}>
+              <Select 
+                value={formData.department} 
+                onValueChange={(value) => handleChange("department", value)}
+                disabled={isSubmitting}
+              >
                 <SelectTrigger className="bg-white/10 border-white/20 text-white">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
@@ -136,6 +199,7 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
                   onChange={(e) => handleChange("phone", e.target.value)}
                   placeholder="(555) 123-4567"
                   className="bg-white/10 border-white/20 text-white placeholder-gray-400 pl-10"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -151,6 +215,7 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
                   onChange={(e) => handleChange("salary", e.target.value)}
                   placeholder="50000"
                   className="bg-white/10 border-white/20 text-white placeholder-gray-400 pl-10"
+                  disabled={isSubmitting}
                 />
               </div>
             </div>
@@ -167,6 +232,7 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
                 onChange={(e) => handleChange("hireDate", e.target.value)}
                 className="bg-white/10 border-white/20 text-white pl-10"
                 required
+                disabled={isSubmitting}
               />
             </div>
           </div>
@@ -177,11 +243,12 @@ export function NewEmployeeForm({ onSubmit }: NewEmployeeFormProps) {
               variant="outline"
               onClick={() => setIsOpen(false)}
               className="border-white/20 text-gray-300 hover:bg-white/10"
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit" className="gradient-primary">
-              Add Employee
+            <Button type="submit" className="gradient-primary" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Employee"}
             </Button>
           </div>
         </form>

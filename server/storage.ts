@@ -1,6 +1,6 @@
 import { drizzle, type NeonHttpDatabase } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
-import { eq } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import type {
   User,
@@ -13,6 +13,8 @@ import type {
   InsertEmployee,
   Finance,
   InsertFinance,
+  Attendance,
+  InsertAttendance,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -49,6 +51,16 @@ export interface IStorage {
   createFinance(finance: InsertFinance): Promise<Finance>;
   updateFinance(id: number, finance: Partial<InsertFinance>): Promise<Finance | undefined>;
   deleteFinance(id: number): Promise<boolean>;
+  
+  // Attendance
+  getAllAttendance(): Promise<Attendance[]>;
+  getAttendanceById(id: number): Promise<Attendance | undefined>;
+  getAttendanceByEmployee(employeeId: number): Promise<Attendance[]>;
+  getAttendanceByDate(date: Date): Promise<Attendance[]>;
+  getAttendanceByDateRange(startDate: Date, endDate: Date): Promise<Attendance[]>;
+  createAttendance(attendance: InsertAttendance): Promise<Attendance>;
+  updateAttendance(id: number, attendance: Partial<InsertAttendance>): Promise<Attendance | undefined>;
+  deleteAttendance(id: number): Promise<boolean>;
 }
 
 // Neon Database Storage Implementation
@@ -56,11 +68,12 @@ export class NeonStorage implements IStorage {
   private db: NeonHttpDatabase<typeof schema>;
 
   constructor() {
-    if (!process.env.DATABASE_URL) {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
       throw new Error("DATABASE_URL is required for Neon connection");
     }
 
-    const sql = neon(process.env.DATABASE_URL!)
+    const sql = neon(databaseUrl);
     this.db = drizzle(sql, { schema });
   }
 
@@ -196,6 +209,63 @@ export class NeonStorage implements IStorage {
     const result = await this.db.delete(schema.finances).where(eq(schema.finances.id, id));
     return result.rowCount > 0;
   }
+
+  // Attendance
+  async getAllAttendance(): Promise<Attendance[]> {
+    return await this.db.select().from(schema.attendance);
+  }
+
+  async getAttendanceById(id: number): Promise<Attendance | undefined> {
+    const result = await this.db.select().from(schema.attendance).where(eq(schema.attendance.id, id));
+    return result[0];
+  }
+
+  async getAttendanceByEmployee(employeeId: number): Promise<Attendance[]> {
+    return await this.db.select().from(schema.attendance).where(eq(schema.attendance.employeeId, employeeId));
+  }
+
+  async getAttendanceByDate(date: Date): Promise<Attendance[]> {
+    // Convert date to start and end of the day
+    const startDate = new Date(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return await this.db.select()
+      .from(schema.attendance)
+      .where(and(
+        gte(schema.attendance.date, startDate),
+        lte(schema.attendance.date, endDate)
+      ));
+  }
+
+  async getAttendanceByDateRange(startDate: Date, endDate: Date): Promise<Attendance[]> {
+    return await this.db.select()
+      .from(schema.attendance)
+      .where(and(
+        gte(schema.attendance.date, startDate),
+        lte(schema.attendance.date, endDate)
+      ));
+  }
+
+  async createAttendance(insertAttendance: InsertAttendance): Promise<Attendance> {
+    const result = await this.db.insert(schema.attendance).values(insertAttendance).returning();
+    return result[0];
+  }
+
+  async updateAttendance(id: number, attendanceUpdate: Partial<InsertAttendance>): Promise<Attendance | undefined> {
+    await this.db
+      .update(schema.attendance)
+      .set(attendanceUpdate)
+      .where(eq(schema.attendance.id, id));
+    return this.getAttendanceById(id);
+  }
+
+  async deleteAttendance(id: number): Promise<boolean> {
+    const result = await this.db.delete(schema.attendance).where(eq(schema.attendance.id, id));
+    return result.rowCount > 0;
+  }
 }
 
 // Memory Storage Implementation (keep for development/testing)
@@ -205,6 +275,7 @@ export class MemStorage implements IStorage {
   private tasks: Map<number, Task>;
   private employees: Map<number, Employee>;
   private finances: Map<number, Finance>;
+  private attendance: Map<number, Attendance>;
   private currentId: { [key: string]: number };
 
   constructor() {
@@ -213,12 +284,14 @@ export class MemStorage implements IStorage {
     this.tasks = new Map();
     this.employees = new Map();
     this.finances = new Map();
+    this.attendance = new Map();
     this.currentId = {
       users: 1,
       projects: 1,
       tasks: 1,
       employees: 1,
       finances: 1,
+      attendance: 1,
     };
   }
 
@@ -371,9 +444,67 @@ export class MemStorage implements IStorage {
   async deleteFinance(id: number): Promise<boolean> {
     return this.finances.delete(id);
   }
+
+  // Attendance
+  async getAllAttendance(): Promise<Attendance[]> {
+    return Array.from(this.attendance.values());
+  }
+
+  async getAttendanceById(id: number): Promise<Attendance | undefined> {
+    return this.attendance.get(id);
+  }
+
+  async getAttendanceByEmployee(employeeId: number): Promise<Attendance[]> {
+    return Array.from(this.attendance.values()).filter(record => record.employeeId === employeeId);
+  }
+
+  async getAttendanceByDate(date: Date): Promise<Attendance[]> {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return Array.from(this.attendance.values()).filter(record => {
+      const recordDate = new Date(record.date);
+      recordDate.setHours(0, 0, 0, 0);
+      return recordDate.getTime() === targetDate.getTime();
+    });
+  }
+
+  async getAttendanceByDateRange(startDate: Date, endDate: Date): Promise<Attendance[]> {
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    
+    return Array.from(this.attendance.values()).filter(record => {
+      const recordTime = new Date(record.date).getTime();
+      return recordTime >= start && recordTime <= end;
+    });
+  }
+
+  async createAttendance(insertAttendance: InsertAttendance): Promise<Attendance> {
+    const id = this.currentId.attendance++;
+    const attendance: Attendance = { 
+      ...insertAttendance, 
+      id,
+      createdAt: new Date()
+    };
+    this.attendance.set(id, attendance);
+    return attendance;
+  }
+
+  async updateAttendance(id: number, attendanceUpdate: Partial<InsertAttendance>): Promise<Attendance | undefined> {
+    const existing = this.attendance.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Attendance = { ...existing, ...attendanceUpdate };
+    this.attendance.set(id, updated);
+    return updated;
+  }
+
+  async deleteAttendance(id: number): Promise<boolean> {
+    return this.attendance.delete(id);
+  }
 }
 
-// Use Neon in production, Memory storage for development
-export const storage = process.env.NODE_ENV === 'production' 
+// Use Neon database when DATABASE_URL is provided, otherwise fallback to Memory storage
+export const storage = process.env.DATABASE_URL 
   ? new NeonStorage() 
   : new MemStorage();

@@ -108,34 +108,34 @@ export default function Employees() {
                   <span className="text-white text-lg font-semibold">{employee.avatar}</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800">{employee.name}</h3>
-                  <p className="text-sm text-gray-600">{employee.role}</p>
-                  <p className="text-xs text-gray-500">{employee.department}</p>
+                  <h3 className="font-semibold text-white">{employee.name}</h3>
+                  <p className="text-sm text-gray-300">{employee.role}</p>
+                  <p className="text-xs text-gray-400">{employee.department}</p>
                 </div>
                 <div className={`w-3 h-3 rounded-full ${employee.isActive ? 'bg-green-400' : 'bg-gray-400'}`}></div>
               </div>
               
               <div className="space-y-3">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
                   <Mail className="w-4 h-4" />
                   <span>{employee.email}</span>
                 </div>
                 
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
                   <Phone className="w-4 h-4" />
                   <span>{employee.phone}</span>
                 </div>
                 
-                <div className="pt-3 border-t border-gray-200">
+                <div className="pt-3 border-t border-gray-600">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Hire Date</span>
-                    <span className="font-medium text-gray-800">
+                    <span className="text-gray-400">Hire Date</span>
+                    <span className="font-medium text-white">
                       {employee.hireDate ? new Date(employee.hireDate).toLocaleDateString() : 'Not set'}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm mt-1">
-                    <span className="text-gray-600">Salary</span>
-                    <span className="font-medium text-gray-800">${employee.salary}</span>
+                    <span className="text-gray-400">Salary</span>
+                    <span className="font-medium text-white">${employee.salary}</span>
                   </div>
                 </div>
               </div>
@@ -148,11 +148,11 @@ export default function Employees() {
           <div className="glass-card rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Total Employees</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">{employees.length}</p>
+                <p className="text-gray-400 text-sm font-medium">Total Employees</p>
+                <p className="text-3xl font-bold text-white mt-2">{employees.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-400" />
               </div>
             </div>
           </div>
@@ -160,13 +160,13 @@ export default function Employees() {
           <div className="glass-card rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Departments</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
+                <p className="text-gray-400 text-sm font-medium">Departments</p>
+                <p className="text-3xl font-bold text-white mt-2">
                   {new Set(employees.map(emp => emp.department)).size}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-green-400" />
               </div>
             </div>
           </div>
@@ -174,13 +174,13 @@ export default function Employees() {
           <div className="glass-card rounded-xl p-6 shadow-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-medium">Active Employees</p>
-                <p className="text-3xl font-bold text-gray-800 mt-2">
+                <p className="text-gray-400 text-sm font-medium">Active Employees</p>
+                <p className="text-3xl font-bold text-white mt-2">
                   {employees.filter(emp => emp.isActive).length}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-green-600" />
+              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-green-400" />
               </div>
             </div>
           </div>

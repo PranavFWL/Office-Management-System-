@@ -1,56 +1,128 @@
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { StatBox } from "@/components/StatBox";
 import { ChartWidget } from "@/components/ChartWidget";
-import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, Plus, Filter, Search, Clock, AlertCircle } from "lucide-react";
-import { dummyFinances } from "@/lib/dummyData";
+import { DollarSign, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight, Plus, Filter, Search, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NewTransactionForm } from "@/components/forms/NewTransactionForm";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
+interface Transaction {
+  id: number;
+  type: string;
+  category: string;
+  description: string;
+  amount: string;
+  date: string;
+  status: string;
+  createdAt: string;
+}
+
 export default function Finance() {
   const { toast } = useToast();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleNewTransaction = (data: any) => {
-    console.log("New transaction:", data);
-    toast({
-      title: "Transaction Added",
-      description: `${data.type === 'income' ? 'Income' : 'Expense'} transaction of $${parseFloat(data.amount).toLocaleString()} has been recorded.`,
-    });
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/finances");
+      if (!response.ok) {
+        throw new Error("Failed to fetch transactions");
+      }
+      const data = await response.json();
+      setTransactions(data);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+      setError("Failed to load transactions. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to load transactions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const receivedIncome = dummyFinances
+  const handleNewTransaction = () => {
+    fetchTransactions();
+  };
+
+  const receivedIncome = transactions
     .filter(f => f.type === 'income' && f.status === 'received')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
-  const pendingIncome = dummyFinances
+  const pendingIncome = transactions
     .filter(f => f.type === 'income' && (f.status === 'pending' || f.status === 'overdue'))
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
   const totalExpectedIncome = receivedIncome + pendingIncome;
 
-  const totalExpenses = dummyFinances
+  const totalExpenses = transactions
     .filter(f => f.type === 'expense')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
-  const overdueAmount = dummyFinances
+  const overdueAmount = transactions
     .filter(f => f.type === 'income' && f.status === 'overdue')
     .reduce((sum, f) => sum + parseFloat(f.amount), 0);
 
   const revenueData = [
-    { category: 'Received', amount: receivedIncome, color: '#10B981' },
-    { category: 'Pending', amount: pendingIncome - overdueAmount, color: '#F59E0B' },
-    { category: 'Overdue', amount: overdueAmount, color: '#EF4444' },
+    { category: 'Received', amount: receivedIncome || 0, color: '#10B981' },
+    { category: 'Pending', amount: (pendingIncome - overdueAmount) || 0, color: '#F59E0B' },
+    { category: 'Overdue', amount: overdueAmount || 0, color: '#EF4444' },
   ];
 
-  const monthlyData = [
-    { month: 'Jan', expected: 28000, received: 28000, pending: 0 },
-    { month: 'Feb', expected: 32000, received: 27500, pending: 4500 },
-    { month: 'Mar', expected: 25000, received: 25000, pending: 0 },
-    { month: 'Apr', expected: 38000, received: 35000, pending: 3000 },
-    { month: 'May', expected: 42000, received: 40000, pending: 2000 },
-    { month: 'Jun', expected: 35000, received: 27500, pending: 7500 },
+  // Generate monthly data based on real transactions
+  const generateMonthlyData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentYear = new Date().getFullYear();
+    
+    const monthlyData = months.map(month => {
+      return {
+        month,
+        expected: 0,
+        received: 0,
+        pending: 0
+      };
+    });
+    
+    transactions.forEach(transaction => {
+      if (transaction.type === 'income') {
+        const date = new Date(transaction.date);
+        if (date.getFullYear() === currentYear) {
+          const monthIndex = date.getMonth();
+          const amount = parseFloat(transaction.amount);
+          
+          monthlyData[monthIndex].expected += amount;
+          
+          if (transaction.status === 'received') {
+            monthlyData[monthIndex].received += amount;
+          } else {
+            monthlyData[monthIndex].pending += amount;
+          }
+        }
+      }
+    });
+    
+    return monthlyData;
+  };
+
+  const monthlyData = transactions.length > 0 ? generateMonthlyData() : [
+    { month: 'Jan', expected: 0, received: 0, pending: 0 },
+    { month: 'Feb', expected: 0, received: 0, pending: 0 },
+    { month: 'Mar', expected: 0, received: 0, pending: 0 },
+    { month: 'Apr', expected: 0, received: 0, pending: 0 },
+    { month: 'May', expected: 0, received: 0, pending: 0 },
+    { month: 'Jun', expected: 0, received: 0, pending: 0 },
   ];
 
   const getStatusColor = (status?: string) => {
@@ -74,7 +146,7 @@ export default function Finance() {
           <StatBox
             title="Expected Revenue"
             value={`$${totalExpectedIncome.toLocaleString()}`}
-            change="+12.5%"
+            change={totalExpectedIncome > 0 ? "+12.5%" : "0%"}
             changeType="positive"
             changeLabel="this month"
             icon={TrendingUp}
@@ -84,7 +156,7 @@ export default function Finance() {
           <StatBox
             title="Received Revenue"
             value={`$${receivedIncome.toLocaleString()}`}
-            change={`${((receivedIncome / totalExpectedIncome) * 100).toFixed(1)}%`}
+            change={totalExpectedIncome > 0 ? `${((receivedIncome / totalExpectedIncome) * 100).toFixed(1)}%` : "0%"}
             changeType="positive"
             changeLabel="of expected"
             icon={DollarSign}
@@ -94,7 +166,7 @@ export default function Finance() {
           <StatBox
             title="Pending Amount"
             value={`$${(pendingIncome - overdueAmount).toLocaleString()}`}
-            change={`${(((pendingIncome - overdueAmount) / totalExpectedIncome) * 100).toFixed(1)}%`}
+            change={totalExpectedIncome > 0 ? `${(((pendingIncome - overdueAmount) / totalExpectedIncome) * 100).toFixed(1)}%` : "0%"}
             changeType="neutral"
             changeLabel="of expected"
             icon={Clock}
@@ -104,7 +176,7 @@ export default function Finance() {
           <StatBox
             title="Overdue Amount"
             value={`$${overdueAmount.toLocaleString()}`}
-            change={`${((overdueAmount / totalExpectedIncome) * 100).toFixed(1)}%`}
+            change={totalExpectedIncome > 0 ? `${((overdueAmount / totalExpectedIncome) * 100).toFixed(1)}%` : "0%"}
             changeType="negative"
             changeLabel="needs action"
             icon={AlertCircle}
@@ -172,67 +244,101 @@ export default function Finance() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
-              <NewTransactionForm onSubmit={handleNewTransaction} />
+              <NewTransactionForm onSuccess={handleNewTransaction} />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Description</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Category</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">Type</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-300">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dummyFinances.map((transaction) => (
-                  <tr key={transaction.id} className="border-b border-white/5 hover:bg-white/5">
-                    <td className="py-4 px-4 text-gray-400">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="font-medium text-white">{transaction.description}</div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="px-2 py-1 bg-white/10 text-gray-300 rounded-full text-sm">
-                        {transaction.category}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                        {transaction.status || 'pending'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center">
-                        {transaction.type === 'income' ? (
-                          <ArrowUpRight className="w-4 h-4 text-emerald-400 mr-1" />
-                        ) : (
-                          <ArrowDownRight className="w-4 h-4 text-red-400 mr-1" />
-                        )}
-                        <span className={`font-medium ${
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              <span className="ml-3 text-gray-400">Loading transactions...</span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !loading && (
+            <div className="rounded-lg p-6 border border-red-500/30 bg-red-500/10 text-center">
+              <p className="text-red-300">{error}</p>
+              <Button 
+                variant="outline" 
+                className="mt-4 border-red-500/30 text-red-300 hover:bg-red-500/20"
+                onClick={fetchTransactions}
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && transactions.length === 0 && (
+            <div className="text-center py-12">
+              <DollarSign className="w-12 h-12 text-gray-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">No transactions yet</h3>
+              <p className="text-gray-400 mb-6">Add your first transaction to get started</p>
+            </div>
+          )}
+
+          {/* Transactions Table */}
+          {!loading && !error && transactions.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Description</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Category</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
+                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Type</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-300">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((transaction) => (
+                    <tr key={transaction.id} className="border-b border-white/5 hover:bg-white/5">
+                      <td className="py-4 px-4 text-gray-400">
+                        {new Date(transaction.date).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="font-medium text-white">{transaction.description}</div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="px-2 py-1 bg-white/10 text-gray-300 rounded-full text-sm">
+                          {transaction.category}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                          {transaction.status || 'pending'}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center">
+                          {transaction.type === 'income' ? (
+                            <ArrowUpRight className="w-4 h-4 text-emerald-400 mr-1" />
+                          ) : (
+                            <ArrowDownRight className="w-4 h-4 text-red-400 mr-1" />
+                          )}
+                          <span className={`font-medium ${
+                            transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
+                          }`}>
+                            {transaction.type}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <span className={`font-bold ${
                           transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
                         }`}>
-                          {transaction.type}
+                          {transaction.type === 'income' ? '+' : '-'}${parseFloat(transaction.amount).toLocaleString()}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <span className={`font-bold ${
-                        transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}${parseFloat(transaction.amount).toLocaleString()}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </Layout>

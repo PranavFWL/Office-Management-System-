@@ -1,6 +1,11 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+
+// Log environment variables for debugging
+console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("NODE_ENV:", process.env.NODE_ENV);
 
 const app = express();
 app.use(express.json());

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProjectSchema, insertTaskSchema, insertEmployeeSchema, insertFinanceSchema } from "@shared/schema";
+import { insertProjectSchema, insertTaskSchema, insertEmployeeSchema, insertFinanceSchema, insertAttendanceSchema } from "@shared/schema";
 import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -166,6 +166,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating finance record:", error);
       res.status(500).json({ message: "Failed to create finance record" });
+    }
+  });
+
+  // Attendance routes
+  app.get("/api/attendance", async (req, res) => {
+    try {
+      const date = req.query.date ? new Date(req.query.date as string) : undefined;
+      const employeeId = req.query.employeeId ? parseInt(req.query.employeeId as string) : undefined;
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      
+      let attendance;
+      
+      if (date) {
+        attendance = await storage.getAttendanceByDate(date);
+      } else if (employeeId) {
+        attendance = await storage.getAttendanceByEmployee(employeeId);
+      } else if (startDate && endDate) {
+        attendance = await storage.getAttendanceByDateRange(startDate, endDate);
+      } else {
+        attendance = await storage.getAllAttendance();
+      }
+      
+      res.json(attendance);
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      res.status(500).json({ message: "Failed to fetch attendance records" });
+    }
+  });
+
+  app.get("/api/attendance/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const attendance = await storage.getAttendanceById(id);
+      if (!attendance) {
+        return res.status(404).json({ message: "Attendance record not found" });
+      }
+      res.json(attendance);
+    } catch (error) {
+      console.error("Error fetching attendance record:", error);
+      res.status(500).json({ message: "Failed to fetch attendance record" });
+    }
+  });
+
+  app.post("/api/attendance", async (req, res) => {
+    try {
+      const validatedData = insertAttendanceSchema.parse(req.body);
+      const attendance = await storage.createAttendance(validatedData);
+      res.status(201).json(attendance);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.flatten() });
+      }
+      console.error("Error creating attendance record:", error);
+      res.status(500).json({ message: "Failed to create attendance record" });
+    }
+  });
+
+  app.patch("/api/attendance/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const attendance = await storage.updateAttendance(id, req.body);
+      if (!attendance) {
+        return res.status(404).json({ message: "Attendance record not found" });
+      }
+      res.json(attendance);
+    } catch (error) {
+      console.error("Error updating attendance record:", error);
+      res.status(500).json({ message: "Failed to update attendance record" });
+    }
+  });
+
+  app.delete("/api/attendance/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteAttendance(id);
+      if (!success) {
+        return res.status(404).json({ message: "Attendance record not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting attendance record:", error);
+      res.status(500).json({ message: "Failed to delete attendance record" });
     }
   });
 

@@ -2,30 +2,105 @@ import { Layout } from "@/components/Layout";
 import { StatBox } from "@/components/StatBox";
 import { ChartWidget } from "@/components/ChartWidget";
 import { Users, Clock, CheckCircle, AlertTriangle, Calendar, Plus, Filter, Search, LogIn, LogOut } from "lucide-react";
-import { dummyAttendance, dummyEmployees } from "@/lib/dummyData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MarkAttendanceForm } from "@/components/forms/MarkAttendanceForm";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Employee } from "@shared/schema";
+
+// Define the attendance record type
+interface AttendanceRecord {
+  id: number;
+  employeeId: number;
+  date: string;
+  checkIn: string | null;
+  checkOut: string | null;
+  totalHours: string | null;
+  status: string;
+  overtime: string | null;
+  notes: string | null;
+  createdAt: string;
+  employeeName?: string; // Added after fetching data
+}
 
 export default function Attendance() {
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState('2024-02-20');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [activeTab, setActiveTab] = useState<'today' | 'records'>('today');
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleMarkAttendance = (data: any) => {
-    console.log("Mark attendance:", data);
-    const employeeName = dummyEmployees.find(emp => emp.id.toString() === data.employeeId)?.name || 'Employee';
-    toast({
-      title: "Attendance Marked",
-      description: `Attendance for ${employeeName} has been successfully recorded.`,
-    });
+  // Fetch employees and attendance data
+  useEffect(() => {
+    fetchEmployees();
+    fetchAttendanceRecords();
+  }, []);
+
+  // Refetch attendance when date changes
+  useEffect(() => {
+    fetchAttendanceRecords();
+  }, [selectedDate]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch("/api/employees");
+      if (!response.ok) {
+        throw new Error("Failed to fetch employees");
+      }
+      const data = await response.json();
+      setEmployees(data);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load employees.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchAttendanceRecords = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch all attendance records or filter by date if selected
+      const queryParams = selectedDate ? `?date=${selectedDate}` : '';
+      const response = await fetch(`/api/attendance${queryParams}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch attendance records");
+      }
+      const data = await response.json();
+      
+      // Add employee names to the attendance records
+      const recordsWithNames = data.map((record: AttendanceRecord) => {
+        const employee = employees.find(emp => emp.id === record.employeeId);
+        return {
+          ...record,
+          employeeName: employee?.name || `Employee #${record.employeeId}`,
+        };
+      });
+      
+      setAttendanceRecords(recordsWithNames);
+    } catch (error) {
+      console.error("Error fetching attendance records:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load attendance records.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAttendanceSuccess = () => {
+    fetchAttendanceRecords();
   };
 
   // Today's attendance stats
-  const todayAttendance = dummyAttendance.filter(record => 
+  const todayAttendance = attendanceRecords.filter(record => 
     new Date(record.date).toDateString() === new Date(selectedDate).toDateString()
   );
 
@@ -34,9 +109,12 @@ export default function Attendance() {
   const lateCount = todayAttendance.filter(record => record.status === 'late').length;
   const halfDayCount = todayAttendance.filter(record => record.status === 'half-day').length;
 
-  const attendanceRate = ((presentCount + lateCount + halfDayCount) / dummyEmployees.length * 100).toFixed(1);
+  const totalEmployees = employees.length;
+  const attendanceRate = totalEmployees > 0 
+    ? ((presentCount + lateCount + halfDayCount) / totalEmployees * 100).toFixed(1)
+    : "0.0";
 
-  // Weekly attendance data
+  // Weekly attendance data (placeholder - would need to fetch from API)
   const weeklyData = [
     { day: 'Mon', present: 15, absent: 2, late: 1 },
     { day: 'Tue', present: 16, absent: 1, late: 1 },
@@ -100,7 +178,7 @@ export default function Attendance() {
               Filter
             </Button>
           </div>
-          <MarkAttendanceForm onSubmit={handleMarkAttendance} />
+          <MarkAttendanceForm onSuccess={handleAttendanceSuccess} />
         </div>
 
         {/* View Toggle */}
@@ -127,7 +205,11 @@ export default function Attendance() {
           </button>
         </div>
 
-        {activeTab === 'today' ? (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-white">Loading attendance data...</div>
+          </div>
+        ) : activeTab === 'today' ? (
           <>
             {/* Attendance Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -144,7 +226,7 @@ export default function Attendance() {
               <StatBox
                 title="Late Arrivals"
                 value={lateCount.toString()}
-                change={`${((lateCount / dummyEmployees.length) * 100).toFixed(1)}%`}
+                change={`${totalEmployees > 0 ? ((lateCount / totalEmployees) * 100).toFixed(1) : "0.0"}%`}
                 changeType="neutral"
                 changeLabel="of total"
                 icon={Clock}
@@ -154,7 +236,7 @@ export default function Attendance() {
               <StatBox
                 title="Absent"
                 value={absentCount.toString()}
-                change={`${((absentCount / dummyEmployees.length) * 100).toFixed(1)}%`}
+                change={`${totalEmployees > 0 ? ((absentCount / totalEmployees) * 100).toFixed(1) : "0.0"}%`}
                 changeType="negative"
                 changeLabel="of total"
                 icon={AlertTriangle}
@@ -164,7 +246,7 @@ export default function Attendance() {
               <StatBox
                 title="Half Day"
                 value={halfDayCount.toString()}
-                change={`${((halfDayCount / dummyEmployees.length) * 100).toFixed(1)}%`}
+                change={`${totalEmployees > 0 ? ((halfDayCount / totalEmployees) * 100).toFixed(1) : "0.0"}%`}
                 changeType="neutral"
                 changeLabel="of total"
                 icon={Calendar}
@@ -220,52 +302,64 @@ export default function Attendance() {
             <div className="glass-card rounded-2xl p-6 border border-white/10">
               <h3 className="text-xl font-semibold text-white mb-6">Today's Attendance - {new Date(selectedDate).toLocaleDateString()}</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {todayAttendance.map((record) => (
-                  <div key={record.id} className="glass-card rounded-lg p-4 border border-white/10">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-white">{record.employeeName}</h4>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 ${getStatusColor(record.status)}`}>
-                        {getStatusIcon(record.status)}
-                        <span>{record.status.replace('-', ' ')}</span>
-                      </span>
-                    </div>
-                    
-                    <div className="space-y-2 text-sm text-gray-400">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <LogIn className="w-3 h-3" />
-                          <span>Check In:</span>
-                        </div>
-                        <span className="text-white">{record.checkIn}</span>
+              {todayAttendance.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  No attendance records found for this date.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {todayAttendance.map((record) => (
+                    <div key={record.id} className="glass-card rounded-lg p-4 border border-white/10">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium text-white">{record.employeeName}</h4>
+                        <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 ${getStatusColor(record.status)}`}>
+                          {getStatusIcon(record.status)}
+                          <span>{record.status.replace('-', ' ')}</span>
+                        </span>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <LogOut className="w-3 h-3" />
-                          <span>Check Out:</span>
-                        </div>
-                        <span className="text-white">{record.checkOut}</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-3 h-3" />
-                          <span>Total Hours:</span>
-                        </div>
-                        <span className="text-white font-medium">{record.totalHours}</span>
-                      </div>
-                      
-                      {record.overtime !== '-' && (
+                      <div className="space-y-2 text-sm text-gray-400">
                         <div className="flex items-center justify-between">
-                          <span>Overtime:</span>
-                          <span className="text-orange-300 font-medium">{record.overtime}</span>
+                          <div className="flex items-center space-x-1">
+                            <LogIn className="w-3 h-3" />
+                            <span>Check In:</span>
+                          </div>
+                          <span className="text-white">{record.checkIn || '-'}</span>
                         </div>
-                      )}
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-1">
+                            <LogOut className="w-3 h-3" />
+                            <span>Check Out:</span>
+                          </div>
+                          <span className="text-white">{record.checkOut || '-'}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-1">
+                            <Clock className="w-3 h-3" />
+                            <span>Total Hours:</span>
+                          </div>
+                          <span className="text-white font-medium">{record.totalHours || '-'}</span>
+                        </div>
+                        
+                        {record.overtime && (
+                          <div className="flex items-center justify-between">
+                            <span>Overtime:</span>
+                            <span className="text-orange-300 font-medium">{record.overtime}</span>
+                          </div>
+                        )}
+                        
+                        {record.notes && (
+                          <div className="mt-2 pt-2 border-t border-white/10">
+                            <p className="text-gray-400 text-xs">{record.notes}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         ) : (
@@ -279,47 +373,53 @@ export default function Attendance() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Employee</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Check In</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Check Out</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Total Hours</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Overtime</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dummyAttendance.map((record) => (
-                    <tr key={record.id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="py-4 px-4">
-                        <div className="font-medium text-white">{record.employeeName}</div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-400">
-                        {new Date(record.date).toLocaleDateString()}
-                      </td>
-                      <td className="py-4 px-4 text-white">{record.checkIn}</td>
-                      <td className="py-4 px-4 text-white">{record.checkOut}</td>
-                      <td className="py-4 px-4 text-white font-medium">{record.totalHours}</td>
-                      <td className="py-4 px-4">
-                        <span className={record.overtime !== '-' ? 'text-orange-300' : 'text-gray-400'}>
-                          {record.overtime}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 w-fit ${getStatusColor(record.status)}`}>
-                          {getStatusIcon(record.status)}
-                          <span>{record.status.replace('-', ' ')}</span>
-                        </span>
-                      </td>
+            {attendanceRecords.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                No attendance records found.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Employee</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Check In</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Check Out</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Total Hours</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Overtime</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {attendanceRecords.map((record) => (
+                      <tr key={record.id} className="border-b border-white/5 hover:bg-white/5">
+                        <td className="py-4 px-4">
+                          <div className="font-medium text-white">{record.employeeName}</div>
+                        </td>
+                        <td className="py-4 px-4 text-gray-400">
+                          {new Date(record.date).toLocaleDateString()}
+                        </td>
+                        <td className="py-4 px-4 text-white">{record.checkIn || '-'}</td>
+                        <td className="py-4 px-4 text-white">{record.checkOut || '-'}</td>
+                        <td className="py-4 px-4 text-white font-medium">{record.totalHours || '-'}</td>
+                        <td className="py-4 px-4">
+                          <span className={record.overtime ? 'text-orange-300' : 'text-gray-400'}>
+                            {record.overtime || '-'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 w-fit ${getStatusColor(record.status)}`}>
+                            {getStatusIcon(record.status)}
+                            <span>{record.status.replace('-', ' ')}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>

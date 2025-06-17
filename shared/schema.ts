@@ -56,12 +56,105 @@ export const finances = pgTable("finances", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Insert schemas
+// New attendance table
+export const attendance = pgTable("attendance", {
+  id: serial("id").primaryKey(),
+  employeeId: integer("employee_id").notNull().references(() => employees.id),
+  date: timestamp("date").notNull(),
+  checkIn: text("check_in"),
+  checkOut: text("check_out"),
+  totalHours: text("total_hours"),
+  status: text("status").notNull().default("present"), // present, late, absent, half-day
+  overtime: text("overtime"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Helper for date parsing
+const dateParser = (val: unknown): Date | null => {
+  if (val === null || val === undefined || val === "") return null;
+  if (val instanceof Date) return val;
+  if (typeof val === "string") {
+    const date = new Date(val);
+    if (!isNaN(date.getTime())) return date;
+  }
+  throw new Error("Invalid date format");
+};
+
+// Improved required date parser with better error handling
+const requiredDateParser = (val: unknown): Date => {
+  if (val === null || val === undefined || val === "") {
+    throw new Error("Date is required");
+  }
+  
+  if (val instanceof Date) {
+    if (isNaN(val.getTime())) {
+      throw new Error("Invalid date object");
+    }
+    return val;
+  }
+  
+  if (typeof val === "string") {
+    const date = new Date(val);
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date string: ${val}`);
+    }
+    return date;
+  }
+  
+  throw new Error(`Invalid date format: ${typeof val}`);
+};
+
+// Helper for amount parsing
+const amountParser = (val: unknown): string => {
+  if (val === null || val === undefined || val === "") {
+    throw new Error("Amount is required");
+  }
+  
+  // If it's already a string, validate it's a number
+  if (typeof val === "string") {
+    if (isNaN(parseFloat(val))) {
+      throw new Error("Amount must be a valid number");
+    }
+    return val;
+  }
+  
+  // If it's a number, convert to string
+  if (typeof val === "number") {
+    return val.toString();
+  }
+  
+  throw new Error(`Invalid amount format: ${typeof val}`);
+};
+
+// Insert schemas with proper date handling
 export const insertUserSchema = createInsertSchema(users).omit({ id: true });
-export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true });
-export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true });
-export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true });
-export const insertFinanceSchema = createInsertSchema(finances).omit({ id: true, createdAt: true });
+export const insertProjectSchema = createInsertSchema(projects).omit({ id: true, createdAt: true }).extend({
+  startDate: z.union([z.string(), z.date(), z.null()]).optional().nullable().transform(dateParser),
+  endDate: z.union([z.string(), z.date(), z.null()]).optional().nullable().transform(dateParser),
+  budget: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform(val => {
+    if (val === null || val === undefined || val === "") return null;
+    return typeof val === "number" ? val.toString() : val;
+  }),
+});
+export const insertTaskSchema = createInsertSchema(tasks).omit({ id: true, createdAt: true }).extend({
+  dueDate: z.union([z.string(), z.date(), z.null()]).optional().nullable().transform(dateParser),
+});
+export const insertEmployeeSchema = createInsertSchema(employees).omit({ id: true }).extend({
+  hireDate: z.union([z.string(), z.date(), z.null()]).optional().nullable().transform(dateParser),
+  salary: z.union([z.string(), z.number(), z.null()]).optional().nullable().transform(val => {
+    if (val === null || val === undefined || val === "") return null;
+    return typeof val === "number" ? val.toString() : val;
+  }),
+});
+export const insertFinanceSchema = createInsertSchema(finances).omit({ id: true, createdAt: true }).extend({
+  date: z.union([z.string(), z.date()]).transform(requiredDateParser),
+  amount: z.union([z.string(), z.number()]).transform(amountParser),
+});
+// Add attendance schema
+export const insertAttendanceSchema = createInsertSchema(attendance).omit({ id: true, createdAt: true }).extend({
+  date: z.union([z.string(), z.date()]).transform(requiredDateParser),
+});
 
 // Types
 export type User = typeof users.$inferSelect;
@@ -78,3 +171,6 @@ export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
 
 export type Finance = typeof finances.$inferSelect;
 export type InsertFinance = z.infer<typeof insertFinanceSchema>;
+
+export type Attendance = typeof attendance.$inferSelect;
+export type InsertAttendance = z.infer<typeof insertAttendanceSchema>;
