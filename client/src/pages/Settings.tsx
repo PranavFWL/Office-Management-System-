@@ -17,7 +17,7 @@ export default function Settings() {
     >
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Theme Settings */}
-        <div className="glass-card rounded-xl p-6 border border-white/10">
+        <div className="glass-card rounded-xl p-6">
           <div className="flex items-center space-x-3 mb-6">
             {theme === 'dark' ? <Moon className="w-5 h-5 text-gray-400" /> : <Sun className="w-5 h-5 text-gray-600" />}
             <h3 className="text-lg font-semibold text-foreground">Appearance</h3>
@@ -41,7 +41,7 @@ export default function Settings() {
         </div>
 
         {/* Profile Settings */}
-        <div className="glass-card rounded-xl p-6 border border-white/10">
+        <div className="glass-card rounded-xl p-6">
           <div className="flex items-center space-x-3 mb-6">
             <User className="w-5 h-5 text-muted-foreground" />
             <h3 className="text-lg font-semibold text-foreground">Profile Settings</h3>

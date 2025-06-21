@@ -229,18 +229,18 @@ export default function Finance() {
         </div>
 
         {/* Recent Transactions */}
-        <div className="glass-card rounded-2xl p-6 border border-white/10">
+        <div className="glass-card rounded-2xl p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h3 className="text-xl font-semibold text-white">Recent Transactions</h3>
+            <h3 className="text-xl font-semibold text-foreground">Recent Transactions</h3>
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+                <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-2.5" />
                 <Input 
                   placeholder="Search transactions..." 
-                  className="pl-10 w-64 bg-white/10 border-white/20 text-white placeholder-gray-400"
+                  className="pl-10 w-64"
                 />
               </div>
-              <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10">
+              <Button variant="outline" size="sm">
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
@@ -252,7 +252,7 @@ export default function Finance() {
           {loading && (
             <div className="flex justify-center items-center py-12">
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
-              <span className="ml-3 text-gray-400">Loading transactions...</span>
+              <span className="ml-3 text-muted-foreground">Loading transactions...</span>
             </div>
           )}
 
@@ -273,9 +273,9 @@ export default function Finance() {
           {/* Empty State */}
           {!loading && !error && transactions.length === 0 && (
             <div className="text-center py-12">
-              <DollarSign className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No transactions yet</h3>
-              <p className="text-gray-400 mb-6">Add your first transaction to get started</p>
+              <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-foreground mb-2">No transactions yet</h3>
+              <p className="text-muted-foreground mb-6">Add your first transaction to get started</p>
             </div>
           )}
 
@@ -284,26 +284,26 @@ export default function Finance() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Date</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Description</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Category</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Status</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-300">Type</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-300">Amount</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Date</th>
+                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Description</th>
+                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Category</th>
+                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Status</th>
+                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Type</th>
+                    <th className="text-right py-3 px-4 font-semibold text-muted-foreground">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="py-4 px-4 text-gray-400">
+                    <tr key={transaction.id} className="border-b border-border hover:bg-muted/50">
+                      <td className="py-4 px-4 text-muted-foreground">
                         {new Date(transaction.date).toLocaleDateString()}
                       </td>
                       <td className="py-4 px-4">
-                        <div className="font-medium text-white">{transaction.description}</div>
+                        <div className="font-medium text-foreground">{transaction.description}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="px-2 py-1 bg-white/10 text-gray-300 rounded-full text-sm">
+                        <span className="px-2 py-1 bg-muted text-muted-foreground rounded-full text-sm">
                           {transaction.category}
                         </span>
                       </td>

@@ -58,27 +58,33 @@ export default function Dashboard() {
       // Fetch projects
       const projectsResponse = await fetch("/api/projects");
       const projectsData = await projectsResponse.json();
-      setProjects(projectsData);
+      
+      // Ensure projectsData is an array
+      const projectsArray = Array.isArray(projectsData) ? projectsData : [];
+      setProjects(projectsArray);
 
       // Fetch tasks to count pending ones
       const tasksResponse = await fetch("/api/tasks");
       const tasksData = await tasksResponse.json();
-      const pendingTasks = tasksData.filter((task: any) => 
+      const tasksArray = Array.isArray(tasksData) ? tasksData : [];
+      const pendingTasks = tasksArray.filter((task: any) => 
         task.status === 'todo' || task.status === 'in-progress'
       ).length;
 
       // Fetch employees count
       const employeesResponse = await fetch("/api/employees");
       const employeesData = await employeesResponse.json();
+      const employeesArray = Array.isArray(employeesData) ? employeesData : [];
       
       // Fetch finances to calculate revenue
       const financesResponse = await fetch("/api/finances");
       const financesData = await financesResponse.json();
+      const financesArray = Array.isArray(financesData) ? financesData : [];
       
       // Calculate monthly revenue from finances
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
-      const monthlyIncome = financesData
+      const monthlyIncome = financesArray
         .filter((finance: any) => {
           const financeDate = new Date(finance.date);
           return finance.type === 'income' && 
@@ -89,9 +95,9 @@ export default function Dashboard() {
       
       // Set dashboard stats
       setStats({
-        activeProjects: projectsData.filter((p: Project) => p.status === 'in-progress').length,
+        activeProjects: projectsArray.filter((p: Project) => p.status === 'in-progress').length,
         pendingTasks: pendingTasks,
-        teamMembers: employeesData.length,
+        teamMembers: employeesArray.length,
         monthlyRevenue: `$${monthlyIncome.toLocaleString()}`
       });
 
@@ -110,7 +116,7 @@ export default function Dashboard() {
 
       // Calculate project status data
       const statusCounts: Record<string, number> = {};
-      projectsData.forEach((project: Project) => {
+      projectsArray.forEach((project: Project) => {
         statusCounts[project.status] = (statusCounts[project.status] || 0) + 1;
       });
       
@@ -131,6 +137,10 @@ export default function Dashboard() {
       setProjectStatusData(projectStatusChartData);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+      // Set empty arrays in case of error
+      setProjects([]);
+      setProjectStatusData([]);
+      setRevenueData([]);
     } finally {
       setLoading(false);
     }
@@ -274,44 +284,44 @@ export default function Dashboard() {
         {/* Recent Activity and Quick Actions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Projects */}
-          <div className="lg:col-span-2 glass-card rounded-2xl p-6 border border-white/10">
+          <div className="lg:col-span-2 glass-card rounded-2xl p-6 border border-white/10 dark:border-white/10 border-gray-200 bg-white/80 dark:bg-transparent backdrop-blur-lg">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-white">Recent Projects</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Projects</h3>
               <button className="text-sm bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg font-medium text-white transition-colors duration-200">
                 View All Projects
               </button>
             </div>
             <div className="space-y-4">
-              {projects.slice(0, 3).map((project) => (
-                <div 
-                  key={project.id} 
-                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors duration-200"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
-                      <FolderOpen className="w-5 h-5 text-white" />
+              {Array.isArray(projects) && projects.length > 0 ? (
+                projects.slice(0, 3).map((project) => (
+                  <div 
+                    key={project.id} 
+                    className="flex items-center justify-between p-4 bg-white/5 dark:bg-white/5 bg-gray-50 rounded-lg border border-white/10 dark:border-white/10 border-gray-200 hover:bg-white/10 dark:hover:bg-white/10 hover:bg-gray-100 transition-colors duration-200"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
+                        <FolderOpen className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{project.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{project.client}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-white">{project.name}</h4>
-                      <p className="text-sm text-gray-400">{project.client}</p>
+                    <div className="flex items-center space-x-4">
+                      <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                        project.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
+                        project.status === 'in-progress' ? 'bg-blue-500/20 text-blue-300' :
+                        project.status === 'on-hold' ? 'bg-orange-500/20 text-orange-300' :
+                        'bg-gray-500/20 text-gray-300'
+                      }`}>
+                        {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{project.progress}%</span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <span className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                      project.status === 'completed' ? 'bg-emerald-500/20 text-emerald-300' :
-                      project.status === 'in-progress' ? 'bg-blue-500/20 text-blue-300' :
-                      project.status === 'on-hold' ? 'bg-orange-500/20 text-orange-300' :
-                      'bg-gray-500/20 text-gray-300'
-                    }`}>
-                      {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
-                    </span>
-                    <span className="text-sm font-medium text-white">{project.progress}%</span>
-                  </div>
-                </div>
-              ))}
-              
-              {projects.length === 0 && (
-                <div className="text-center py-8 text-gray-400">
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-600 dark:text-gray-400">
                   No projects found. Create your first project to get started.
                 </div>
               )}
@@ -319,8 +329,8 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Actions */}
-          <div className="glass-card rounded-2xl p-6 border border-white/10">
-            <h3 className="text-xl font-semibold text-white mb-6">Quick Actions</h3>
+          <div className="glass-card rounded-2xl p-6 border border-white/10 dark:border-white/10 border-gray-200 bg-white/80 dark:bg-transparent backdrop-blur-lg">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Quick Actions</h3>
             <div className="space-y-3">
               <button className="w-full flex items-center space-x-3 p-3 gradient-primary hover:opacity-90 rounded-lg transition-opacity duration-200 text-left">
                 <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -353,21 +363,21 @@ export default function Dashboard() {
 
             {/* Recent Notifications */}
             <div className="mt-8">
-              <h4 className="text-lg font-medium text-white mb-4">Recent Notifications</h4>
+              <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Notifications</h4>
               <div className="space-y-3">
                 <div className="p-3 bg-blue-500/15 rounded-lg border-l-4 border-blue-400 hover:bg-blue-500/20 transition-colors duration-200">
-                  <p className="text-sm font-medium text-white">Project deadline approaching</p>
-                  <p className="text-xs text-gray-400 mt-1">Website Redesign due in 2 days</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Project deadline approaching</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Website Redesign due in 2 days</p>
                 </div>
                 
                 <div className="p-3 bg-emerald-500/15 rounded-lg border-l-4 border-emerald-400 hover:bg-emerald-500/20 transition-colors duration-200">
-                  <p className="text-sm font-medium text-white">Task completed</p>
-                  <p className="text-xs text-gray-400 mt-1">Logo design approved by client</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Task completed</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Logo design approved by client</p>
                 </div>
                 
                 <div className="p-3 bg-orange-500/15 rounded-lg border-l-4 border-orange-400 hover:bg-orange-500/20 transition-colors duration-200">
-                  <p className="text-sm font-medium text-white">New team member</p>
-                  <p className="text-xs text-gray-400 mt-1">Sarah Johnson joined the design team</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">New team member</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Sarah Johnson joined the design team</p>
                 </div>
               </div>
             </div>

@@ -109,11 +109,11 @@ export default function Tasks() {
   };
 
   const TaskCard = ({ task }: { task: TaskWithDetails }) => (
-    <div className="glass-card rounded-lg p-4 hover:shadow-lg transition-shadow duration-300 border border-white/10">
+    <div className="glass-card rounded-lg p-4 hover:shadow-lg transition-shadow duration-300">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h4 className="font-medium text-white mb-1">{task.title}</h4>
-          <p className="text-sm text-gray-400 mb-2">{task.description}</p>
+          <h4 className="font-medium text-foreground mb-1">{task.title}</h4>
+          <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
         </div>
         <span className={`px-2 py-1 rounded text-xs font-medium ml-2 ${
           task.priority === 'high' ? 'bg-red-500/20 text-red-300' :
@@ -126,11 +126,11 @@ export default function Tasks() {
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-1 text-xs text-gray-400">
+          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
             <FolderOpen className="w-3 h-3" />
             <span>{task.projectName}</span>
           </div>
-          <div className="flex items-center space-x-1 text-xs text-gray-400">
+          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
             <User className="w-3 h-3" />
             <span>{task.assigneeName}</span>
           </div>
@@ -151,7 +151,7 @@ export default function Tasks() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center space-x-1">
           <Calendar className="w-3 h-3" />
           <span>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</span>
@@ -171,13 +171,13 @@ export default function Tasks() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+              <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-2.5" />
               <Input 
                 placeholder="Search tasks..." 
-                className="pl-10 w-64 bg-white/10 border-white/20 text-white placeholder-gray-400"
+                className="pl-10 w-64"
               />
             </div>
-            <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10">
+            <Button variant="outline" size="sm">
               <Filter className="w-4 h-4 mr-2" />
               Filter
             </Button>
@@ -189,7 +189,7 @@ export default function Tasks() {
         {loading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <span className="ml-3 text-gray-400">Loading tasks...</span>
+            <span className="ml-3 text-muted-foreground">Loading tasks...</span>
           </div>
         )}
 

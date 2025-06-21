@@ -83,7 +83,7 @@ export default function Projects() {
         {loading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <span className="ml-3 text-gray-400">Loading projects...</span>
+            <span className="ml-3 text-muted-foreground">Loading projects...</span>
           </div>
         )}
 
@@ -103,10 +103,10 @@ export default function Projects() {
 
         {/* Empty State */}
         {!loading && !error && projects.length === 0 && (
-          <div className="glass-card rounded-2xl p-12 border border-white/10 text-center">
-            <FolderOpen className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
-            <p className="text-gray-400 mb-6">Create your first project to get started</p>
+          <div className="glass-card rounded-2xl p-12 text-center">
+            <FolderOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">No projects yet</h3>
+            <p className="text-muted-foreground mb-6">Create your first project to get started</p>
             <NewProjectForm onSuccess={handleNewProject} />
           </div>
         )}
@@ -117,7 +117,7 @@ export default function Projects() {
             {projects.map((project) => (
               <div 
                 key={project.id} 
-                className="glass-card rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border border-white/10"
+                className="glass-card rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -125,8 +125,8 @@ export default function Projects() {
                       <FolderOpen className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-white">{project.name}</h3>
-                      <p className="text-sm text-gray-400">{project.client}</p>
+                      <h3 className="font-semibold text-foreground">{project.name}</h3>
+                      <p className="text-sm text-muted-foreground">{project.client}</p>
                     </div>
                   </div>
                   <span className={`px-3 py-1 rounded-lg text-xs font-medium ${
@@ -140,16 +140,16 @@ export default function Projects() {
                   </span>
                 </div>
                 
-                <p className="text-sm text-gray-400 mb-4">{project.description || 'No description provided'}</p>
+                <p className="text-sm text-muted-foreground mb-4">{project.description || 'No description provided'}</p>
                 
                 <div className="space-y-4">
                   {/* Progress Bar */}
                   <div>
                     <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-400">Progress</span>
-                      <span className="font-medium text-white">{project.progress}%</span>
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className="font-medium text-foreground">{project.progress}%</span>
                     </div>
-                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                       <div 
                         className="gradient-primary h-2 rounded-full transition-all duration-500 ease-out" 
                         style={{ width: `${project.progress}%` }}
@@ -158,16 +158,16 @@ export default function Projects() {
                   </div>
                   
                   {/* Project Details */}
-                  <div className="flex justify-between text-sm bg-white/5 p-3 rounded-lg">
-                    <span className="text-gray-400">Budget</span>
-                    <span className="font-medium text-white">
+                  <div className="flex justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span className="text-muted-foreground">Budget</span>
+                    <span className="font-medium text-foreground">
                       {project.budget ? `$${parseFloat(project.budget).toLocaleString()}` : 'Not set'}
                     </span>
                   </div>
                   
-                  <div className="flex justify-between text-sm bg-white/5 p-3 rounded-lg">
-                    <span className="text-gray-400">Due Date</span>
-                    <span className="font-medium text-white">
+                  <div className="flex justify-between text-sm bg-muted p-3 rounded-lg">
+                    <span className="text-muted-foreground">Due Date</span>
+                    <span className="font-medium text-foreground">
                       {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not set'}
                     </span>
                   </div>
