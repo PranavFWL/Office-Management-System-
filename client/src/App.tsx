@@ -96,10 +96,27 @@ function SimpleSignIn() {
 }
 
 function Router() {
+  console.log("🔄 Router component rendered");
+  
   return (
     <Switch>
-      <Route path="/sign-in" component={SignInPage} />
+      <Route path="/sign-in" component={(props) => {
+        console.log("✅ /sign-in route matched", props);
+        return <SignInPage {...props} />;
+      }} />
+      <Route path="/sign-in/sso-callback" component={(props) => {
+        console.log("✅ /sign-in/sso-callback route matched", props);
+        return <SignInPage {...props} />;
+      }} />
+      <Route path="/sign-in/sso-callback/sso-callback" component={(props) => {
+        console.log("✅ /sign-in/sso-callback/sso-callback route matched", props);
+        return <SignInPage {...props} />;
+      }} />
       <Route path="/sign-up" component={SignUpPage} />
+      <Route path="/sign-up/continue" component={(props) => {
+        console.log("✅ /sign-up/continue route matched", props);
+        return <SignUpPage {...props} />;
+      }} />
       <Route path="/test" component={TestPage} />
       <Route path="/dashboard-test" component={Dashboard} />
       <Route path="/" component={ProtectedDashboard} />
@@ -109,12 +126,21 @@ function Router() {
       <Route path="/attendance" component={ProtectedAttendance} />
       <Route path="/finance" component={ProtectedFinance} />
       <Route path="/settings" component={ProtectedSettings} />
-      <Route component={NotFound} />
+      <Route component={(props) => {
+        console.log("❌ No route matched, showing NotFound", props);
+        console.log("🌐 Current URL:", window.location.href);
+        console.log("📍 Current pathname:", window.location.pathname);
+        return <NotFound {...props} />;
+      }} />
     </Switch>
   );
 }
 
 function App() {
+  console.log("🚀 App component rendered");
+  console.log("🔑 Clerk publishable key exists:", !!clerkPubKey);
+  console.log("🌐 Current URL on App render:", window.location.href);
+  
   return (
     <ClerkProvider publishableKey={clerkPubKey}>
       <QueryClientProvider client={queryClient}>
